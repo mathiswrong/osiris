@@ -86,7 +86,10 @@ export default function CommandPalette({
     const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // replaceState keeps the back button clean but does not fire hashchange,
+      // which endpoint cards rely on to expand themselves.
       history.replaceState(null, '', `#${id}`);
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
     }
   };
 

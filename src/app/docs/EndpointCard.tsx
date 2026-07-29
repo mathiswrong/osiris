@@ -58,12 +58,21 @@ data = r.json()`;
    Endpoint card
    ───────────────────────────────────────────────────────────── */
 
-export default function EndpointCard({ ep, origin }: { ep: ApiEndpoint; origin: string }) {
+export default function EndpointCard({
+  ep,
+  origin,
+  open,
+  onToggle,
+}: {
+  ep: ApiEndpoint;
+  origin: string;
+  open: boolean;
+  onToggle: (id: string) => void;
+}) {
   const methods = Array.isArray(ep.method) ? ep.method : [ep.method];
   const primary = methods[0];
   const id = endpointId(ep);
 
-  const [open, setOpen] = useState(false);
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries((ep.params || []).map(p => [p.name, (p.example || '').split(' | ')[0] || '']))
   );
@@ -122,9 +131,10 @@ export default function EndpointCard({ ep, origin }: { ep: ApiEndpoint; origin: 
     >
       {/* ── Header row ── */}
       <button
-        onClick={() => setOpen(v => !v)}
+        onClick={() => onToggle(id)}
         aria-expanded={open}
-        className="w-full text-left p-4 flex items-start gap-3 group"
+        aria-controls={`${id}-detail`}
+        className="w-full text-left p-4 flex items-start gap-3 group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-primary)]/50"
       >
         <div className="flex flex-col gap-1 shrink-0 pt-0.5">
           {methods.map(m => (
@@ -161,7 +171,7 @@ export default function EndpointCard({ ep, origin }: { ep: ApiEndpoint; origin: 
 
       {/* ── Expanded detail ── */}
       {open && (
-        <div className="px-4 pb-4 -mt-1">
+        <div id={`${id}-detail`} className="px-4 pb-4 -mt-1">
           {/* Params */}
           {ep.params && ep.params.length > 0 && (
             <div className="mb-4">

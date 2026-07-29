@@ -18,7 +18,7 @@ const GUIDE_SECTIONS = [
 
 const API_SECTIONS = [
   { id: 'api', title: 'Conventions' },
-  ...API_GROUPS.map(g => ({ id: `api-${g.id}`, title: g.title })),
+  ...API_GROUPS.map(g => ({ id: `api-${g.id}`, title: g.title, count: g.endpoints.length })),
 ];
 
 const ALL_SECTIONS = [...GUIDE_SECTIONS, ...API_SECTIONS];
@@ -30,7 +30,66 @@ export default function DocsClient() {
   const [navOpen, setNavOpen] = useState(false);
   const [progress, setProgress] = useState(0);
   const [origin, setOrigin] = useState(FALLBACK_ORIGIN);
+  const [openIds, setOpenIds] = useState<Set<string>>(() => new Set());
+  const [methodFilter, setMethodFilter] = useState<'ALL' | 'GET' | 'POST'>('ALL');
+  const [apiQuery, setApiQuery] = useState('');
   const mainRef = useRef<HTMLElement>(null);
+
+  const toggleEndpoint = useCallback((id: string) => {
+    setOpenIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  /* Filter the reference by method and free text. Groups that end up empty
+     drop out entirely rather than leaving an orphaned heading. */
+  const filteredGroups = useMemo(() => {
+    const q = apiQuery.trim().toLowerCase();
+    return API_GROUPS.map(group => ({
+      ...group,
+      endpoints: group.endpoints.filter(ep => {
+        const methods = Array.isArray(ep.method) ? ep.method : [ep.method];
+        if (methodFilter !== 'ALL' && !methods.includes(methodFilter)) return false;
+        if (!q) return true;
+        return (
+          ep.path.toLowerCase().includes(q) ||
+          ep.summary.toLowerCase().includes(q) ||
+          ep.returns.some(r => r.toLowerCase().includes(q)) ||
+          (ep.params || []).some(p => p.name.toLowerCase().includes(q))
+        );
+      }),
+    })).filter(g => g.endpoints.length > 0);
+  }, [methodFilter, apiQuery]);
+
+  const visibleIds = useMemo(
+    () => filteredGroups.flatMap(g => g.endpoints.map(endpointId)),
+    [filteredGroups]
+  );
+  const matchCount = visibleIds.length;
+  const allExpanded = matchCount > 0 && visibleIds.every(id => openIds.has(id));
+
+  const toggleAll = useCallback(() => {
+    setOpenIds(prev => {
+      const next = new Set(prev);
+      const shouldOpen = !visibleIds.every(id => next.has(id));
+      visibleIds.forEach(id => (shouldOpen ? next.add(id) : next.delete(id)));
+      return next;
+    });
+  }, [visibleIds]);
+
+  /* A deep link must land on readable content, so expand the endpoint it names. */
+  useEffect(() => {
+    const syncToHash = () => {
+      const hash = decodeURIComponent(window.location.hash.slice(1));
+      if (hash) setOpenIds(prev => (prev.has(hash) ? prev : new Set(prev).add(hash)));
+    };
+    syncToHash();
+    window.addEventListener('hashchange', syncToHash);
+    return () => window.removeEventListener('hashchange', syncToHash);
+  }, []);
 
   const paletteItems = useMemo(() => buildPaletteItems(ALL_SECTIONS), []);
 
@@ -103,12 +162,13 @@ export default function DocsClient() {
   const prev = activeIdx > 0 ? ALL_SECTIONS[activeIdx - 1] : null;
   const next = activeIdx >= 0 && activeIdx < ALL_SECTIONS.length - 1 ? ALL_SECTIONS[activeIdx + 1] : null;
 
-  const navLink = (s: { id: string; title: string }) => (
+  const navLink = (s: { id: string; title: string; count?: number }) => (
     <a
       key={s.id}
       href={`#${s.id}`}
       onClick={closeNav}
-      className={`relative block pl-4 pr-3 py-[7px] text-[12.5px] rounded-r-md transition-all duration-200 ${
+      aria-current={active === s.id ? 'true' : undefined}
+      className={`relative flex items-center gap-2 pl-4 pr-3 py-[7px] text-[12.5px] rounded-r-md transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-primary)]/50 ${
         active === s.id
           ? 'text-[var(--gold-primary)] bg-[var(--gold-primary)]/[0.07] font-medium'
           : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/[0.03]'
@@ -119,12 +179,22 @@ export default function DocsClient() {
           active === s.id ? 'h-[70%] bg-[var(--gold-primary)]' : 'h-0 bg-transparent'
         }`}
       />
-      {s.title}
+      <span className="flex-1 min-w-0 truncate">{s.title}</span>
+      {s.count !== undefined && (
+        <span className="text-[9px] font-mono tabular-nums text-[var(--text-muted)]/60 shrink-0">{s.count}</span>
+      )}
     </a>
   );
 
   return (
     <div className="docs-root min-h-screen bg-[var(--bg-void)] text-[var(--text-primary)] antialiased">
+      <a
+        href="#overview"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[400] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-[var(--gold-primary)] focus:text-black focus:text-[12px] focus:font-mono focus:font-bold"
+      >
+        Skip to content
+      </a>
+
       {/* Ambient wash — keeps the page from reading as a flat black slab */}
       <div
         aria-hidden
@@ -361,7 +431,7 @@ print(len(data["commercial_flights"]), "commercial")`,
           </Section>
 
           <Section id="self-hosting" eyebrow="Guide" title="Self-Hosting">
-            <p>KNUCKLETAT needs Node 20+ and no database. From a local checkout:</p>
+            <p>KNUCKLETAT uses Node 22, matching the Docker images, and no database. From a local checkout:</p>
             <Pre label="Local development" lang="bash">{`cd <project-directory>
 npm install
 npm run dev        # http://localhost:3000`}</Pre>
@@ -407,12 +477,17 @@ docker compose up -d`}</Pre>
               ))}
             </div>
             <h3 className="text-[12px] font-mono tracking-[0.15em] uppercase text-[var(--text-primary)] pt-4">
-              Optional — higher rate limits only
+              Optional — extra coverage
             </h3>
             <p>
-              <Code>FIRMS_API_KEY</Code>, <Code>OPENSKY_CLIENT_ID</Code>, <Code>OPENSKY_CLIENT_SECRET</Code>,{' '}
-              <Code>N2YO_API_KEY</Code>, <Code>AIS_API_KEY</Code>. The public keyless feeds are used unless you extend
-              the code to prefer these.
+              <Code>OPENSKY_CLIENT_ID</Code> and <Code>OPENSKY_CLIENT_SECRET</Code> <em>are</em> read at runtime: set
+              both and <Code>/api/flights</Code> additionally authenticates against OpenSky over OAuth2, backing off
+              for 15 minutes after a failure. Without them the route still works, falling back to the keyless
+              airplanes.live and adsb.lol feeds.
+            </p>
+            <p>
+              <Code>AIS_API_KEY</Code> enables the live aisstream.io vessel feed. <Code>FIRMS_API_KEY</Code> and
+              <Code>N2YO_API_KEY</Code> are reserved; their feeds use public sources.
             </p>
             <Callout tone="warn" title="Secrets hygiene">
               Generate secrets with <Code>openssl rand -hex 32</Code>. Never commit a populated <Code>.env</Code> —
@@ -509,7 +584,11 @@ docker compose up -d`}</Pre>
                 },
                 {
                   k: 'Caching',
-                  v: 'Routes set their own Cache-Control TTLs: typically 45–60s for fast-moving feeds, up to a day for static reference data. Polling faster than the TTL gains nothing but load. Where a route advertises refreshInterval, use it.',
+                  v: 'TTLs are per-route and vary more than you might expect: 30s for /api/flights, 60s for /api/earthquakes and /api/news, 120s for /api/satellites. /api/maritime caches snapshots for 30s; /api/markets and /api/infrastructure are sent no-store, so their polling hits the origin every time. Check the endpoint before assuming a CDN absorbs it.',
+                },
+                {
+                  k: 'refreshInterval',
+                  v: 'Where a route advertises refreshInterval, the value is in SECONDS, not milliseconds. /api/conflicts returns 300 for zone data and 60 for live events. Treating it as milliseconds would poll roughly a thousand times faster than intended.',
                 },
                 {
                   k: 'Rate limits',
@@ -530,16 +609,111 @@ docker compose up -d`}</Pre>
             </Callout>
           </Section>
 
-          {API_GROUPS.map(group => (
+          {/* ── Reference filter bar ── */}
+          <div className="sticky top-14 z-[190] -mx-2 px-2 py-3 mb-8 bg-[var(--bg-void)]/92 backdrop-blur-xl border-b border-white/[0.06]">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative flex-1 min-w-[12rem]">
+                <svg viewBox="0 0 24 24" className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--text-muted)]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m20 20-3.5-3.5" />
+                </svg>
+                <input
+                  value={apiQuery}
+                  onChange={e => setApiQuery(e.target.value)}
+                  placeholder="Filter endpoints by path, field, or description…"
+                  aria-label="Filter endpoints"
+                  className="w-full pl-8 pr-8 py-2 rounded-lg text-[12px] font-mono bg-white/[0.03] border border-white/[0.08] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold-primary)]/40"
+                />
+                {apiQuery && (
+                  <button
+                    onClick={() => setApiQuery('')}
+                    aria-label="Clear filter"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                  >
+                    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <path d="M18 6 6 18M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1 p-0.5 rounded-lg border border-white/[0.08] bg-white/[0.02]">
+                {(['ALL', 'GET', 'POST'] as const).map(m => (
+                  <button
+                    key={m}
+                    onClick={() => setMethodFilter(m)}
+                    aria-pressed={methodFilter === m}
+                    className={`text-[10px] font-mono font-bold tracking-widest px-2.5 py-1.5 rounded-md transition-colors ${
+                      methodFilter === m
+                        ? 'bg-[var(--gold-primary)]/15 text-[var(--gold-primary)]'
+                        : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                    }`}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={toggleAll}
+                disabled={matchCount === 0}
+                className="text-[10px] font-mono tracking-widest uppercase px-3 py-2 rounded-lg border border-white/[0.08] bg-white/[0.02] text-[var(--text-muted)] hover:text-[var(--gold-primary)] hover:border-[var(--gold-primary)]/30 disabled:opacity-40 transition-colors"
+              >
+                {allExpanded ? 'Collapse all' : 'Expand all'}
+              </button>
+            </div>
+
+            <div className="mt-2 text-[10px] font-mono text-[var(--text-muted)]">
+              Showing <span className="text-[var(--gold-primary)] font-bold">{matchCount}</span> of {ENDPOINT_COUNT}{' '}
+              endpoints
+              {(apiQuery || methodFilter !== 'ALL') && (
+                <button
+                  onClick={() => {
+                    setApiQuery('');
+                    setMethodFilter('ALL');
+                  }}
+                  className="ml-2 text-[var(--cyan-primary)] hover:underline"
+                >
+                  Reset filters
+                </button>
+              )}
+            </div>
+          </div>
+
+          {filteredGroups.map(group => (
             <Section key={group.id} id={`api-${group.id}`} eyebrow="API Reference" title={group.title}>
               <p>{group.blurb}</p>
               <div className="space-y-2.5 pt-1">
-                {group.endpoints.map(ep => (
-                  <EndpointCard key={endpointId(ep)} ep={ep} origin={origin} />
-                ))}
+                {group.endpoints.map(ep => {
+                  const id = endpointId(ep);
+                  return (
+                    <EndpointCard
+                      key={id}
+                      ep={ep}
+                      origin={origin}
+                      open={openIds.has(id)}
+                      onToggle={toggleEndpoint}
+                    />
+                  );
+                })}
               </div>
             </Section>
           ))}
+
+          {matchCount === 0 && (
+            <div className="rounded-xl border border-white/[0.07] bg-white/[0.015] p-10 text-center mb-16">
+              <div className="text-[13px] text-[var(--text-secondary)] mb-1">No endpoints match your filters.</div>
+              <button
+                onClick={() => {
+                  setApiQuery('');
+                  setMethodFilter('ALL');
+                }}
+                className="text-[12px] font-mono text-[var(--gold-primary)] hover:underline"
+              >
+                Reset filters
+              </button>
+            </div>
+          )}
 
           {/* Prev / next */}
           {(prev || next) && (

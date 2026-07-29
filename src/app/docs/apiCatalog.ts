@@ -90,8 +90,9 @@ export const API_GROUPS: ApiGroup[] = [
         method: 'GET',
         summary: 'Live ADS-B aircraft, bucketed by class.',
         returns: ['commercial_flights', 'private_flights', 'private_jets', 'military_flights', 'source'],
+        env: ['OPENSKY_CLIENT_ID', 'OPENSKY_CLIENT_SECRET'],
         notes:
-          'Keyless via adsb.lol. Each bucket is an array; sum them for a total. `OPENSKY_CLIENT_ID` / `OPENSKY_CLIENT_SECRET` are reserved for higher rate limits and are not required.',
+          'Works keyless, pulling military/LADD/PIA/squawk-7700 feeds from airplanes.live and adsb.lol. If `OPENSKY_CLIENT_ID` and `OPENSKY_CLIENT_SECRET` are set the route additionally authenticates against OpenSky via OAuth2, backing off for 15 minutes after a failure. Each bucket is an array; sum them for a total. Cached `s-maxage=30`.',
       },
       {
         path: '/api/satellites',
@@ -190,7 +191,8 @@ export const API_GROUPS: ApiGroup[] = [
           'refreshInterval',
           'timestamp',
         ],
-        notes: '`refreshInterval` is the server’s recommended client poll interval in milliseconds — honour it rather than hard-coding your own.',
+        notes:
+          '`refreshInterval` is the server’s recommended client poll interval **in seconds** (300 for the zone set, 60 for live events) — honour it rather than hard-coding your own. Zone data is curated OSINT; live events are scraped from the Liveuamap theatre pages listed in `sources`.',
       },
       {
         path: '/api/frontlines',
@@ -244,8 +246,10 @@ export const API_GROUPS: ApiGroup[] = [
       {
         path: '/api/markets',
         method: 'GET',
-        summary: 'Defence-sector equities and commodities.',
-        returns: ['stocks', 'timestamp'],
+        summary: 'Equities, energy, commodities, crypto, indices, and derived supply-chain alerts.',
+        returns: ['stocks', 'oil', 'commodities', 'crypto', 'indices', 'scm_alerts', 'timestamp'],
+        notes:
+          'Quotes come from Yahoo Finance, crypto from CoinGecko. `scm_alerts` is derived server-side by cross-referencing `/api/maritime` chokepoint risk, so it is a computed field rather than a passthrough. Sent `no-store` — never cached, so alerts stay real-time.',
       },
       {
         path: '/api/crypto',
@@ -299,6 +303,7 @@ export const API_GROUPS: ApiGroup[] = [
         method: 'GET',
         summary: 'Fixed strategic infrastructure — nuclear sites, plants, and facilities.',
         returns: ['infrastructure', 'total', 'timestamp'],
+        notes: 'Sent `no-store` despite being largely static reference data — do not assume a CDN will absorb your polling.',
       },
       {
         path: '/api/maritime',
@@ -306,6 +311,8 @@ export const API_GROUPS: ApiGroup[] = [
         summary: 'Ports, chokepoints, and vessel positions.',
         returns: ['ports', 'chokepoints', 'ships', 'total_ports', 'total_chokepoints', 'total_ships', 'timestamp'],
         env: ['AIS_API_KEY'],
+        notes:
+          'Snapshots are cached for 30 seconds. `AIS_API_KEY` enables live vessels from aisstream.io. `/api/markets` consumes chokepoint risk to derive its `scm_alerts`.',
       },
       {
         path: '/api/arcgis',
@@ -328,8 +335,10 @@ export const API_GROUPS: ApiGroup[] = [
       {
         path: '/api/geo',
         method: 'GET',
-        summary: 'Geolocates the calling client by IP.',
+        summary: 'Geolocates the calling client. Takes no parameters — the address is read from the request headers.',
         returns: ['status', 'query', 'city', 'regionName', 'country', 'lat', 'lon', 'isp', 'org'],
+        notes:
+          'Resolves the caller from `cf-connecting-ip`, `x-real-ip`, or the first entry of `x-forwarded-for`; private addresses fall through to the provider’s own view of the request. Tries ipapi.co, then freeipapi.com, then ip-api.com, so exact field coverage varies slightly by which provider answered. Returns 502 when every provider fails.',
       },
     ],
   },
@@ -511,16 +520,15 @@ export const API_GROUPS: ApiGroup[] = [
         params: [
           {
             name: 'type',
-            required: true,
-            desc: 'Scan type.',
+            desc: 'Scan type. Defaults to `quick` when omitted; anything outside the allow-list is rejected with 400.',
             example: 'quick | ssl | headers | rdns | subdomains | tech | whois | geoloc | vuln',
           },
           { name: 'target', required: true, desc: 'Host, domain, or address to scan.' },
         ],
-        returns: ['detail', 'hint', 'failed', 'error'],
+        returns: ['detail', 'hint', 'available_scans', 'failed', 'error'],
         env: ['SCANNER_URL', 'SCANNER_KEY'],
         notes:
-          'Returns 503 when `SCANNER_URL` / `SCANNER_KEY` are unset — that is the supported way to disable RECON. `SCANNER_KEY` must match the backend secret.',
+          'Nine scan types are allow-listed. Timeouts are per-type, from 8s (rdns, geoloc) to 90s (vuln). Returns 503 when `SCANNER_URL` / `SCANNER_KEY` are unset. `SCANNER_KEY` must match the backend secret.',
       },
     ],
   },

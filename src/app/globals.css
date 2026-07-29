@@ -181,6 +181,34 @@ html:has(.docs-root) body {
   html:has(.docs-root) body { scroll-behavior: auto; }
 }
 
+/* ── Docs polish ── */
+.docs-root {
+  font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+  text-rendering: optimizeLegibility;
+}
+
+.docs-root ::selection {
+  background: rgba(var(--gold-rgb), 0.28);
+  color: var(--text-heading);
+}
+
+/* Visible keyboard focus without adding a ring for mouse users. */
+.docs-root a:focus-visible,
+.docs-root button:focus-visible,
+.docs-root input:focus-visible {
+  outline: 2px solid rgba(var(--gold-rgb), 0.55);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Long paths and JSON keys should wrap rather than force a horizontal page
+   scroll on narrow viewports. */
+.docs-root pre { tab-size: 2; }
+
+@media (max-width: 640px) {
+  .docs-root h1 { font-size: 32px; line-height: 1.1; }
+}
+
 /* ── Docs code tokens ── */
 .docs-code { color: #C9D1D9; }
 .docs-code .tok-key { color: var(--gold-primary); }

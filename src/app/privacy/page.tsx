@@ -4,7 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Data & Privacy',
   description:
-    'What the hosted OSIRIS instance sends to third parties, when it does so, and what that means for the confidentiality of an investigation.',
+    'What the hosted KNUCKLETAT instance sends to third parties, when it does so, and what that means for the confidentiality of an investigation.',
   alternates: { canonical: '/privacy' },
 };
 
@@ -33,12 +33,12 @@ export default function PrivacyPage() {
     <main className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] px-6 py-16">
       <div className="mx-auto max-w-3xl">
         <Link href="/" className="text-[11px] font-mono tracking-widest text-[var(--text-muted)] hover:text-[var(--cyan-primary)]">
-          ← OSIRIS
+          ← KNUCKLETAT
         </Link>
 
         <h1 className="mt-6 text-2xl font-bold tracking-wide">Data &amp; Privacy</h1>
         <p className="mt-3 text-sm leading-relaxed text-[var(--text-muted)]">
-          OSIRIS is a front end over public data sources. It does not hold an intelligence
+          KNUCKLETAT is a front end over public data sources. It does not hold an intelligence
           database of its own: nearly every panel answers by querying somebody else&apos;s service
           in real time. That has a consequence worth stating plainly, because it is easy to miss.
         </p>
@@ -50,7 +50,7 @@ export default function PrivacyPage() {
           <p className="mt-2 text-sm leading-relaxed text-[var(--text-muted)]">
             When you look up an email address, domain or IP, that value is forwarded to the
             upstream provider that answers the lookup. The provider sees what you searched for,
-            and the search itself can reveal what you are investigating. Self-hosting OSIRIS
+            and the search itself can reveal what you are investigating. Self-hosting KNUCKLETAT
             changes who operates the front end — it does not stop these outbound queries. If the
             subject of an investigation is sensitive, treat every lookup as disclosed to the
             provider listed below.
@@ -92,7 +92,7 @@ export default function PrivacyPage() {
             </table>
           </div>
           <p className="mt-3 text-[11px] leading-relaxed text-[var(--text-muted)]">
-            Each service applies its own privacy policy and retention to what it receives. OSIRIS
+            Each service applies its own privacy policy and retention to what it receives. KNUCKLETAT
             does not control, and cannot undo, what an upstream provider keeps.
           </p>
         </section>

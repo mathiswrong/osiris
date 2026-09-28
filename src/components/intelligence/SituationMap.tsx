@@ -266,7 +266,7 @@ export default function SituationMap({
                     id: i.id,
                     title: i.title,
                     description: i.summary,
-                    context: `${i.source} · ${new Date(i.occurredAt).toUTCString()} · ${i.sourceId === "gdacs" ? "alert published; onset not established by this timestamp" : "provider observation"}`,
+                    context: `${i.source} · ${i.timeLabel || "observed"} ${new Date(i.occurredAt).toUTCString()} · ${i.sourceId === "gdacs" ? "alert published; onset not established by this timestamp" : i.location?.precision || "location unresolved"}`,
                     kind: i.kind,
                     selected: i.id === selected,
                   },

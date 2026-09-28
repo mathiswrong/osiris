@@ -507,7 +507,7 @@ export const API_GROUPS: ApiGroup[] = [
       {
         path: '/api/scanner',
         method: 'GET',
-        summary: 'Runs a scan against a target via the OSIRIS scanner backend.',
+        summary: 'Runs a scan against a target via the configured scanner backend.',
         params: [
           {
             name: 'type',
@@ -520,7 +520,7 @@ export const API_GROUPS: ApiGroup[] = [
         returns: ['detail', 'hint', 'failed', 'error'],
         env: ['SCANNER_URL', 'SCANNER_KEY'],
         notes:
-          'Returns 503 when `SCANNER_URL` / `SCANNER_KEY` are unset — that is the supported way to disable RECON. `SCANNER_KEY` must equal the backend’s `OSIRIS_KEY`.',
+          'Returns 503 when `SCANNER_URL` / `SCANNER_KEY` are unset — that is the supported way to disable RECON. `SCANNER_KEY` must match the backend secret.',
       },
     ],
   },

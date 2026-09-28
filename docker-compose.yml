@@ -71,7 +71,7 @@ x-casaos:
   category: Network
   description:
     en_us: >-
-      OSIRIS is a production-grade open-source OSINT situational-awareness
+      KNUCKLETAT is a production-grade open-source OSINT situational-awareness
       dashboard. It aggregates real-time global intelligence across aviation,
       maritime, CCTV networks, seismic activity, wildfires, news feeds,
       weather, space weather, cyber threats (CVEs) and conflict zones into a
@@ -80,11 +80,11 @@ x-casaos:
   tagline:
     en_us: Real-time global OSINT intelligence dashboard
   title:
-    en_us: OSIRIS
-  icon: https://raw.githubusercontent.com/simplifaisoul/osiris/master/public/casaos-icon.png
-  thumbnail: https://raw.githubusercontent.com/simplifaisoul/osiris/master/public/og-image.png
+    en_us: KNUCKLETAT
+  icon: https://knuckletat.com/knuckletat-icon-192.png
+  thumbnail: https://knuckletat.com/knuckletat-og.png
   screenshot_link:
-    - https://raw.githubusercontent.com/simplifaisoul/osiris/master/public/og-image.png
+    - https://knuckletat.com/knuckletat-og.png
   scheme: http
   hostname: ""
   port_map: "3000"
@@ -96,7 +96,7 @@ x-casaos:
         en_us: "(Optional) RECON scanner backend URL, e.g. http://scanner:7700"
     - container: SCANNER_KEY
       description:
-        en_us: "(Optional) RECON scanner shared secret (must match backend OSIRIS_KEY)."
+        en_us: "(Optional) RECON scanner shared secret (must match the backend key)."
     - container: FIRMS_API_KEY
       description:
         en_us: "(Optional) NASA FIRMS API key for active-fire data."

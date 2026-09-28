@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Flame } from "lucide-react";
 import type {
   Flashpoint,
@@ -19,6 +19,15 @@ export function FlashpointMonitor({
 }) {
   const [filter, setFilter] = useState("all"),
     [expanded, setExpanded] = useState(false);
+  const [compact, setCompact] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 600px)");
+    const update = () => setCompact(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  const previewLimit = compact ? 5 : 10;
   const rows = (result?.data || []).filter(
     (f) => filter === "all" || f.state === filter,
   );
@@ -29,7 +38,7 @@ export function FlashpointMonitor({
       seen.add(f.title);
       return true;
     })
-    .slice(0, 10);
+    .slice(0, previewLimit);
   return (
     <section className="desk-panel desk-flashpoints">
       <div className="desk-panel-title">
@@ -125,9 +134,11 @@ export function FlashpointMonitor({
             : ""}
           {result && !result.persistent ? " · History could not be saved" : ""}
         </span>
-        {rows.length > 10 && (
+        {rows.length > previewLimit && (
           <button onClick={() => setExpanded((v) => !v)}>
-            {expanded ? "Show top 10" : `Explore all ${rows.length} watches`}
+            {expanded
+              ? `Show top ${previewLimit}`
+              : `Explore all ${rows.length} watches`}
           </button>
         )}
       </div>

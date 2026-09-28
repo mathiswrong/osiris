@@ -2,11 +2,15 @@ import Parser from "rss-parser";
 import type { Development, SourceDefinition } from "./types";
 import { earthquakes, hazards, iso, webUrl } from "./normalize";
 import { providerFetch, sourceRead } from "./store";
+import { copernicusActivations, loadHansAlerts, ooniIncidents } from "./special-sources";
 export async function readSource(def: SourceDefinition) {
   return sourceRead<Development>(def, async () => {
+    if (def.id === "hans") return loadHansAlerts(def.url);
     const response = await providerFetch(def.url);
     if (def.id === "usgs") return earthquakes(await response.json());
     if (def.id === "eonet") return hazards(await response.json());
+    if (def.id === "cems") return copernicusActivations(await response.json());
+    if (def.id === "ooni") return ooniIncidents(await response.json());
     return parseReportingFeed(def, await response.text());
   });
 }

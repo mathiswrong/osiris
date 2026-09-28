@@ -12,6 +12,7 @@ import {
   RefreshCw,
   Sun,
   Moon,
+  Radio,
 } from "lucide-react";
 import {
   SOURCE_DEFINITIONS,
@@ -24,10 +25,13 @@ import { rankDevelopments } from "@/lib/intelligence/normalize";
 import { missionFor } from "@/lib/intelligence/profiles";
 import type { FlashpointResult } from "@/lib/intelligence/flashpoints";
 import BroadcastPanel from "./BroadcastPanel";
+import BroadcastWall from "./BroadcastWall";
 import SatelliteDossier from "./SatelliteDossier";
+import SatelliteSection from "./SatelliteSection";
 import { FlashpointMonitor, FlashpointDetail } from "./FlashpointMonitor";
 import { HoverPreview } from "./HoverPreview";
 import InvestigationWorkspace from "./InvestigationWorkspace";
+import SignalsWorkspace, { SignalPulse, useSignalsFeed } from "./SignalsWorkspace";
 import "./desk.css";
 const SatelliteGlobe = dynamic(() => import("./SatelliteGlobe"), {
   ssr: false,
@@ -96,6 +100,9 @@ export default function IntelligenceDesk() {
     [busy, setBusy] = useState(false);
   const [theme, setTheme] = useState<"day" | "night">("day");
   const [investigation, setInvestigation] = useState<string | null>(null);
+  const [satelliteActive, setSatelliteActive] = useState(false);
+  const activateSatellite = useCallback(() => setSatelliteActive(true), []);
+  const { feed: signalFeed, feedError: signalError } = useSignalsFeed(refresh);
   useEffect(() => {
     try {
       if (localStorage.getItem("knuckletat:theme") === "night")
@@ -184,7 +191,7 @@ export default function IntelligenceDesk() {
     };
   }, [refresh]);
   useEffect(() => {
-    if (mode !== "space" && !investigation) return;
+    if (!satelliteActive && !investigation) return;
     const controller = new AbortController();
     let active = true;
     async function load() {
@@ -217,7 +224,7 @@ export default function IntelligenceDesk() {
       controller.abort();
       clearInterval(timer);
     };
-  }, [mode, investigation, satelliteId, refresh]);
+  }, [satelliteActive, investigation, satelliteId, refresh]);
   const items = useMemo(
     () => rankDevelopments(Object.values(results).flatMap((r) => r.data)),
     [results],
@@ -322,7 +329,7 @@ export default function IntelligenceDesk() {
           <span>{theme === "day" ? "Night" : "Day"}</span>
         </button>
         <Link href="/explore">
-          Legacy explorer <ArrowUpRight size={13} />
+          Map explorer <ArrowUpRight size={13} />
         </Link>
       </header>
       <nav className="desk-navigation" aria-label="Workspace">
@@ -333,9 +340,20 @@ export default function IntelligenceDesk() {
           <Globe2 size={14} />
           Global
         </button>
-        <button aria-pressed={space} onClick={() => switchMode("space")}>
+        <button aria-label="Jump to Satellites on this page" onClick={() => {
+          switchMode("global");
+          setSatelliteActive(true);
+          window.setTimeout(() => document.getElementById("satellites")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+        }}>
           <Satellite size={14} />
-          Satellites
+          Satellites ↓
+        </button>
+        <button aria-label="Jump to Signals on this page" onClick={() => {
+          switchMode("global");
+          window.setTimeout(() => document.getElementById("signals")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+        }}>
+          <Radio size={14} />
+          Signals ↓
         </button>
         <button
           aria-pressed={mode === "sources"}
@@ -402,7 +420,7 @@ export default function IntelligenceDesk() {
                   const h = health.find((h) => h.id === def.id);
                   return (
                     <tr key={def.id}>
-                      <td>
+                      <td data-label="Provider / coverage">
                         <a href={def.url} target="_blank" rel="noreferrer">
                           {def.name} ↗
                         </a>
@@ -412,18 +430,21 @@ export default function IntelligenceDesk() {
                         )}
                       </td>
                       <td
+                        data-label="State"
                         className={
                           h?.state === "healthy" ? "desk-green" : "desk-amber"
                         }
                       >
                         {h?.state ||
                           (def.id === SATELLITE_SOURCE.id
-                            ? "Loads in Satellites"
+                            ? "Loads on homepage"
                             : "Connecting")}
                       </td>
-                      <td>{h?.count ?? "—"}</td>
-                      <td>{h?.fetchedAt ? date(h.fetchedAt) : "—"}</td>
-                      <td>{def.refreshMs / 60000} min</td>
+                      <td data-label="Records">{h?.count ?? "—"}</td>
+                      <td data-label="Last success">
+                        {h?.fetchedAt ? date(h.fetchedAt) : "—"}
+                      </td>
+                      <td data-label="Refresh">{def.refreshMs / 60000} min</td>
                     </tr>
                   );
                 })}
@@ -431,14 +452,15 @@ export default function IntelligenceDesk() {
             </table>
           </div>
           <div className="desk-coverage-notes">
-            <h2>Coverage still to connect</h2>
+            <h2>Specialist source access</h2>
             <p>
-              Regional ADS-B aviation and AIS Stream maritime adapters are
-              available inside investigations. AIS requires a server-side API
-              key; absent coverage is shown explicitly. UN News supplies
-              institutional reporting, not a complete humanitarian incident
-              dataset. Camera and Earth-imagery integration are not enabled in
-              this workspace yet.
+              Public Copernicus activations, USGS HANS alerts, and curated OONI
+              findings are included in Global. The Signals section samples
+              public Telegram posts and offers on-demand HDX HAPI, ReliefWeb,
+              and Global Fishing Watch lookups once their server credentials
+              are configured. Regional ADS-B and AIS Stream adapters are
+              available inside investigations. Camera and Earth imagery are
+              not enabled in this workspace.
             </p>
             <h2>How records are ordered</h2>
             <p>
@@ -455,13 +477,18 @@ export default function IntelligenceDesk() {
       ) : (
         <>
           {!space && (
-            <FlashpointMonitor
-              result={flashpoints}
-              selected={selected}
-              onSelect={investigate}
-              error={monitorError}
-            />
+            <div className="desk-watch-grid">
+              <FlashpointMonitor
+                result={flashpoints}
+                selected={selected}
+                onSelect={investigate}
+                error={monitorError}
+              />
+              <SignalPulse feed={signalFeed} feedError={signalError} />
+            </div>
           )}
+          {!space && <BroadcastWall />}
+          {!space && <SignalsWorkspace feed={signalFeed} feedError={signalError} />}
           {!space && activeInvestigation && (
             <InvestigationWorkspace
               flashpoint={activeInvestigation}
@@ -478,7 +505,8 @@ export default function IntelligenceDesk() {
               onClose={() => setInvestigation(null)}
               onSatellite={(id) => {
                 setSatelliteId(id);
-                switchMode("space");
+                setSatelliteActive(true);
+                window.setTimeout(() => document.getElementById("satellites")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
               }}
             />
           )}
@@ -492,8 +520,8 @@ export default function IntelligenceDesk() {
               </div>
               <div className="desk-map-caption">
                 {space
-                  ? `${satellites?.data.length.toLocaleString() || "—"} active objects · ${reviewedCount.toLocaleString()} with mission context · hover to preview, click to inspect`
-                  : "Filled dots: provider locations · rings: regional watches, not precise incident locations · hover to preview"}
+                  ? `${satellites?.data.length.toLocaleString() || "—"} active objects · ${reviewedCount.toLocaleString()} with mission context · select an object to inspect`
+                  : "Filled dots: provider locations · rings: regional watches, not precise incident locations · select a marker or record"}
                 {space && satelliteId && (
                   <button
                     onClick={() => {
@@ -621,7 +649,7 @@ export default function IntelligenceDesk() {
               </div>
             </section>
             <aside className="desk-side">
-              {!space && <BroadcastPanel />}
+              {!space && <div className="desk-mobile-broadcast"><BroadcastPanel /></div>}
               <section className="desk-panel desk-context">
                 <div className="desk-panel-title">
                   <h2>{space ? "Mission inspector" : "Evidence context"}</h2>
@@ -638,7 +666,7 @@ export default function IntelligenceDesk() {
                       {selectedSat
                         ? missionFor(selectedSat)?.summary ||
                           "Mission details have not been established for this catalogue object."
-                        : "Search above or select an object on the globe. Hover for orbital details, then click to inspect its mission."}
+                        : "Search above or select an object on the globe to inspect its orbit and mission."}
                     </p>
                     <span className="desk-muted">
                       {selectedSat
@@ -726,7 +754,7 @@ export default function IntelligenceDesk() {
                     <strong>{selectedItem.title}</strong>
                     <p>
                       {selectedItem.location
-                        ? "Provider-supplied geographic observation."
+                        ? `${selectedItem.location.precision}. See the original provider record for context.`
                         : "No precise event location established. The map remains in its current view."}
                     </p>
                     <a href={selectedItem.url} target="_blank" rel="noreferrer">
@@ -745,6 +773,13 @@ export default function IntelligenceDesk() {
               </section>
             </aside>
           </div>
+          <SatelliteSection
+            satellites={satellites}
+            selectedId={satelliteId}
+            onSelect={setSatelliteId}
+            active={satelliteActive}
+            onActivate={activateSatellite}
+          />
           <div className="desk-bottom-grid">
             <section className="desk-panel">
               <div className="desk-panel-title">
@@ -863,7 +898,7 @@ export default function IntelligenceDesk() {
                           `${i.source} · ${date(i.occurredAt)}`,
                           i.summary,
                           i.location
-                            ? "Provider observation"
+                            ? i.location.precision
                             : "Precise location not established",
                         ]}
                       >
@@ -1008,17 +1043,17 @@ export default function IntelligenceDesk() {
                           <dt>Why surfaced</dt>
                           <dd>{selectedItem.reason}</dd>
                           <dt>
-                            {selectedItem.sourceId === "gdacs"
+                            {selectedItem.timeLabel || (selectedItem.sourceId === "gdacs"
                               ? "Alert published"
                               : selectedItem.kind === "report"
                                 ? "Published"
-                                : "Observed"}
+                                : "Observed")}
                           </dt>
                           <dd>{date(selectedItem.occurredAt)}</dd>
                           <dt>Location</dt>
                           <dd>
                             {selectedItem.location
-                              ? `${selectedItem.location.lat.toFixed(3)}, ${selectedItem.location.lng.toFixed(3)} · provider observation`
+                              ? `${selectedItem.location.lat.toFixed(3)}, ${selectedItem.location.lng.toFixed(3)} · ${selectedItem.location.precision}`
                               : "Not established; no map pin inferred"}
                           </dd>
                         </dl>
@@ -1045,7 +1080,13 @@ export default function IntelligenceDesk() {
                         </dd>
                         <dt>Verification</dt>
                         <dd>
-                          {selectedItem.sourceId === "gdacs"
+                          {selectedItem.sourceId === "cems"
+                            ? "Mapping activation; centroid is not an incident point"
+                            : selectedItem.sourceId === "hans"
+                              ? "Observatory alert; notice does not establish an eruption"
+                              : selectedItem.sourceId === "ooni"
+                                ? "Curated network finding; measurement coverage varies"
+                                : selectedItem.sourceId === "gdacs"
                             ? "Provider disaster alert; publication time does not establish event onset"
                             : selectedItem.kind === "report"
                               ? "Attributed report; not independently verified here"
@@ -1073,17 +1114,11 @@ export default function IntelligenceDesk() {
         </>
       )}
       <footer className="desk-footer">
-        <span>KNUCKLETAT · OSIRIS FORK</span>
+        <span>KNUCKLETAT</span>
         <span>
           Source status describes retrieval, not truth · UTC timestamps
         </span>
-        <a
-          href="https://github.com/mathiswrong/osiris"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Source code ↗
-        </a>
+        <Link href="/#signals">Signals & source lookups ↗</Link>
       </footer>
     </main>
   );

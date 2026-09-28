@@ -202,15 +202,17 @@ function Player({
     <div ref={host} className="desk-youtube" />
   );
 }
-export default function BroadcastPanel() {
+export default function BroadcastPanel({ fixedChannel }: { fixedChannel?: number } = {}) {
   const [channel, setChannel] = useState(0),
     [attempt, setAttempt] = useState(0),
-    [enabled, setEnabled] = useState(false),
+    [enabled, setEnabled] = useState(fixedChannel !== undefined),
     [stream, setStream] = useState<BroadcastStream | null>(null),
     [status, setStatus] = useState(
-      "Choose a channel, then load its live player.",
+      fixedChannel === undefined
+        ? "Choose a channel, then load its live player."
+        : "Finding the current live stream…",
     );
-  const selected = BROADCASTS[channel];
+  const selected = BROADCASTS[fixedChannel ?? channel];
   useEffect(() => {
     if (!enabled) return;
     let active = true;
@@ -243,15 +245,15 @@ export default function BroadcastPanel() {
     setAttempt((x) => x + 1);
   };
   return (
-    <section className="desk-panel desk-broadcast">
+    <section className={`desk-panel desk-broadcast${fixedChannel === undefined ? "" : " desk-broadcast-fixed"}`}>
       <div className="desk-panel-title">
         <h2>
           <Radio size={15} />
-          Live broadcasts
+          {fixedChannel === undefined ? "Live broadcasts" : selected.name}
         </h2>
         <span>Official sources</span>
       </div>
-      <div className="desk-channels">
+      {fixedChannel === undefined && <div className="desk-channels">
         {BROADCASTS.map((c, i) => (
           <button
             key={c.id}
@@ -266,7 +268,7 @@ export default function BroadcastPanel() {
             {c.name}
           </button>
         ))}
-      </div>
+      </div>}
       <div className="desk-video">
         {stream ? (
           <Player

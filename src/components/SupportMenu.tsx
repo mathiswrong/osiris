@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Coffee, ShoppingBag } from 'lucide-react';
+import { ChevronDown, Coffee } from 'lucide-react';
 
 /*
  * One SUPPORT button in place of two pills. Ko-fi and the merch store used to
@@ -16,13 +16,6 @@ const OPTIONS = [
     label: 'SUPPORT ON KO-FI',
     detail: 'Tip once or monthly',
     color: 'var(--gold-primary)',
-  },
-  {
-    href: 'https://shop.osirisai.live/',
-    Icon: ShoppingBag,
-    label: 'BUY MERCH',
-    detail: 'shop.osirisai.live',
-    color: 'var(--cyan-primary)',
   },
 ] as const;
 

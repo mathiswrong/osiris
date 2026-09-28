@@ -22,7 +22,7 @@ const API_SECTIONS = [
 ];
 
 const ALL_SECTIONS = [...GUIDE_SECTIONS, ...API_SECTIONS];
-const FALLBACK_ORIGIN = 'https://osirisai.live';
+const FALLBACK_ORIGIN = 'https://knuckletat.com';
 
 export default function DocsClient() {
   const [active, setActive] = useState('overview');
@@ -152,7 +152,7 @@ export default function DocsClient() {
             </svg>
             <span className="flex flex-col leading-none">
               <span className="text-[12px] font-bold tracking-[0.3em] text-[var(--gold-primary)] font-mono">
-                OSIRIS
+                KNUCKLETAT
               </span>
               <span className="text-[9px] font-mono tracking-[0.22em] text-[var(--text-muted)] uppercase mt-[3px]">
                 Docs
@@ -177,18 +177,6 @@ export default function DocsClient() {
               ⌘K
             </kbd>
           </button>
-
-          <a
-            href="https://github.com/simplifaisoul/osiris"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="GitHub repository"
-            className="hidden sm:flex items-center justify-center w-8 h-8 rounded-lg border border-white/[0.08] bg-white/[0.02] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-white/20 transition-colors"
-          >
-            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="currentColor">
-              <path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.69 5.4-5.26 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z" />
-            </svg>
-          </a>
 
           <Link
             href="/"
@@ -268,12 +256,12 @@ export default function DocsClient() {
               <span className="text-[var(--text-heading)]">Build on the</span>
               <br />
               <span className="bg-gradient-to-r from-[var(--gold-primary)] via-[#F0D060] to-[var(--cyan-primary)] bg-clip-text text-transparent">
-                OSIRIS platform
+                KNUCKLETAT platform
               </span>
             </h1>
 
             <p className="text-[15px] leading-[1.75] text-[var(--text-secondary)] max-w-[42rem]">
-              OSIRIS aggregates aviation, maritime, seismic, conflict, cyber, and OSINT feeds onto a single
+              KNUCKLETAT aggregates aviation, maritime, seismic, conflict, cyber, and OSINT feeds onto a single
               GPU-rendered map — and exposes every one of them as a plain HTTP endpoint. This is the same API the
               dashboard runs on. There is no separate, privileged internal tier.
             </p>
@@ -373,9 +361,8 @@ print(len(data["commercial_flights"]), "commercial")`,
           </Section>
 
           <Section id="self-hosting" eyebrow="Guide" title="Self-Hosting">
-            <p>OSIRIS needs Node 20+ and no database. A local instance is three commands:</p>
-            <Pre label="Local development" lang="bash">{`git clone https://github.com/simplifaisoul/osiris.git
-cd osiris
+            <p>KNUCKLETAT needs Node 20+ and no database. From a local checkout:</p>
+            <Pre label="Local development" lang="bash">{`cd <project-directory>
 npm install
 npm run dev        # http://localhost:3000`}</Pre>
             <p>For a production build, or to run the checks:</p>
@@ -385,8 +372,7 @@ npm test           # vitest
 npm run test:live  # includes tests that hit live upstream feeds`}</Pre>
             <p>
               A <Code>Dockerfile</Code> and <Code>docker-compose.yml</Code> ship with the repository. The container
-              always listens on port 3000 internally; <Code>OSIRIS_PORT</Code> controls the host port it is published
-              on.
+              always listens on port 3000 internally; the host port is configured in the Compose file.
             </p>
             <Pre label="Docker" lang="bash">{`cp .env.example .env
 docker compose up -d`}</Pre>
@@ -404,19 +390,11 @@ docker compose up -d`}</Pre>
               {[
                 {
                   k: 'SCANNER_URL / SCANNER_KEY',
-                  v: 'Points at the separate RECON scanner backend. SCANNER_KEY must equal that backend’s OSIRIS_KEY. Leave both empty to disable RECON — /api/scanner then returns 503 by design.',
+                  v: 'Points at the separate RECON scanner backend. SCANNER_KEY must match that backend’s configured secret. Leave both empty to disable RECON — /api/scanner then returns 503 by design.',
                 },
                 {
                   k: 'SDK_INGEST_KEY',
                   v: 'Shared secret for /api/sdk/ingest. The endpoint fails closed: while this is unset, ingestion is disabled and returns 503.',
-                },
-                {
-                  k: 'OSIRIS_TELEGRAM_CHANNELS',
-                  v: 'Comma-separated public Telegram channel names (no @) for the Telegram OSINT layer, overriding the curated default set.',
-                },
-                {
-                  k: 'OSIRIS_PORT',
-                  v: 'Host port the UI is published on. The container itself always listens on 3000.',
                 },
               ].map(row => (
                 <div
@@ -595,22 +573,7 @@ docker compose up -d`}</Pre>
 
           {/* Footer */}
           <footer className="border-t border-white/[0.06] pt-6 pb-16 flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] font-mono text-[var(--text-muted)]">
-            {[
-              { href: 'https://github.com/simplifaisoul/osiris', label: 'GitHub' },
-              { href: 'https://discord.gg/EPaFD5FFKf', label: 'Discord' },
-              { href: 'https://x.com/soulsimplifai', label: 'X' },
-              { href: 'https://github.com/simplifaisoul/osiris/issues', label: 'Report an issue' },
-            ].map(l => (
-              <a
-                key={l.label}
-                href={l.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-[var(--gold-primary)] transition-colors"
-              >
-                {l.label}
-              </a>
-            ))}
+            <Link href="/">KNUCKLETAT dashboard</Link>
             <span className="ml-auto opacity-60">MIT Licensed</span>
           </footer>
         </main>

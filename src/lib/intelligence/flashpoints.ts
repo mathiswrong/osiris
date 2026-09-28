@@ -24,7 +24,7 @@ export interface Flashpoint {
   location?: {
     lat: number;
     lng: number;
-    precision: "country context" | "provider observation" | "waterway context";
+    precision: "country context" | "provider observation" | "waterway context" | "activation centroid" | "volcano location";
   };
 }
 export interface FlashpointResult {

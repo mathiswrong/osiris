@@ -19,12 +19,13 @@ export interface Development {
   title: string;
   url: string;
   occurredAt: string;
+  timeLabel?: string;
   updatedAt?: string;
   kind: "earthquake" | "hazard" | "report";
   reason: string;
   priority: number;
   summary: string;
-  location?: { lat: number; lng: number; precision: "provider observation" };
+  location?: { lat: number; lng: number; precision: "provider observation" | "activation centroid" | "volcano location" };
 }
 export interface SourceResult<T = Development> {
   data: T[];
@@ -169,6 +170,27 @@ export const SOURCE_DEFINITIONS = [
     coverage:
       "Global disaster alerts \u00b7 provider coordinates and alert levels",
     refreshMs: 300000,
+  },
+  {
+    id: "cems",
+    name: "Copernicus Rapid Mapping",
+    url: "https://rapidmapping.emergency.copernicus.eu/backend/dashboard-api/public-activations-info/?limit=100",
+    coverage: "Emergency mapping activations · past 60 days · activation-area centroid",
+    refreshMs: 15 * 60_000,
+  },
+  {
+    id: "hans",
+    name: "USGS HANS",
+    url: "https://volcanoes.usgs.gov/hans-public/api/volcano/getElevatedVolcanoes",
+    coverage: "Volcanoes with elevated alert levels · latest notice, not eruption confirmation",
+    refreshMs: 15 * 60_000,
+  },
+  {
+    id: "ooni",
+    name: "OONI Explorer",
+    url: "https://api.ooni.io/api/v1/incidents/search?limit=100",
+    coverage: "Published internet interference findings · curated, not live telemetry",
+    refreshMs: 6 * 60 * 60_000,
   },
 ] as const;
 export const SATELLITE_SOURCE = {

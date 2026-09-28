@@ -1,6 +1,6 @@
-# Knuckle Tat · Osiris Fork
+# KNUCKLETAT intelligence workspace
 
-The home route is our dashboard. `/explore` retains the original Osiris explorer. The public-facing brand is Knuckle Tat, with Osiris Fork retained as attribution. Original licence and attribution files remain intact. New integrations contact original publishers, operators and agencies directly; none call World Monitor services.
+The home route is the global dashboard. Its `#signals` section contains Telegram activity analysis, social searches, and specialist lookups. `/signals` redirects to that section. `/explore` contains the interactive map. Original licence and attribution files remain intact. New integrations contact original publishers, operators and agencies directly; none call World Monitor services.
 
 ## Run
 
@@ -120,7 +120,7 @@ Browser verification also covered ten condensed rows, related-region navigation 
 
 ## Railway deployment — 2026-09-28
 
-Live at https://osiris-production-7acb.up.railway.app/ with one web replica, a supervised background collector and a mounted data volume. All 16 reporting/alert adapters responded during deployment checks, as did regional ADS-B. The AIS key remains unconfigured. Flashpoint history starts from the production collection time and must learn a full day before surge detection becomes eligible.
+The September 28 Railway deployment used one web replica, a supervised background collector and a mounted data volume. All 16 reporting/alert adapters responded during those deployment checks, as did regional ADS-B. The AIS key was unconfigured. Flashpoint history starts from the production collection time and must learn a full day before surge detection becomes eligible.
 
 The first CelesTrak transfer exceeded the original 12-second RSS timeout. A diagnostic retry received HTTP 403 explaining that this IP had already downloaded the active group and must wait for the next two-hour update. The satellite download now allows 60 seconds. We restored the existing direct-provider OMM snapshot fetched at 2026-09-28T15:26:09.684Z, preserving that timestamp and marking retrieval stale with the error visible. This is a dated fallback, not a successful Railway refresh. No alternate proxy or provider-rate-limit bypass is used. A future successful refresh must be verified separately. Production observation history was not imported from development.
 

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://knuckletat.com",
   ),
-  title: "KNUCKLETAT",
+  title: "KNUCKLETAT | open source intel dashboard",
   description: "aggregated open source intel",
   applicationName: "KNUCKLETAT",
   manifest: "/manifest.json",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     type: "website",
     url: "/",
     siteName: "KNUCKLETAT",
-    title: "KNUCKLETAT",
+    title: "KNUCKLETAT | open source intel dashboard",
     description: "aggregated open source intel",
     images: [
       {
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "KNUCKLETAT",
+    title: "KNUCKLETAT | open source intel dashboard",
     description: "aggregated open source intel",
     images: ["/knuckletat-og.png"],
   },

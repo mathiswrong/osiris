@@ -85,7 +85,7 @@ export function useSatelliteTiles({ satellites, selectedId, onSelect, active, on
         </>}
       </aside>
     </DashboardTile>, <DashboardTile key="catalogue" id="catalogue" title="Satellite catalogue" w={3} h={21}>
-      <section className="desk-panel">
+      <section ref={sectionRef} className="desk-panel">
         <div className="desk-panel-title"><h2>Find a satellite</h2><span>{matches.length} MATCHES</span></div>
         <div className="desk-records">
           {matches.slice(0, limit).map((satellite) => <HoverPreview key={satellite.id} title={satellite.name} lines={[missionFor(satellite)?.summary || "Mission not yet documented", missionFor(satellite)?.operator || "Operator not established", `${satellite.altKm.toFixed(0)} km · elements ${satellite.elementAgeHours.toFixed(1)}h old`]}>

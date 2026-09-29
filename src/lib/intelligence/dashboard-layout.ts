@@ -2,7 +2,7 @@ import { verticalCompactor, type Layout, type LayoutItem } from "react-grid-layo
 
 export const LAYOUT_KEY = "knuckletat:bricks:v1";
 export type TileDefinition = { id: string; w: number; h: number };
-// A complete row at each breakpoint keeps related tools next to one another.
+// Compact capability groups provide the tablet and phone fallback.
 const DEFAULT_TILES: Record<string, { w: number; h: number; tabletW?: number; group: string }> = {
   flashpoints: { w: 6, h: 12, group: "overview" },
   "signal-watch": { w: 3, h: 12, group: "overview" },
@@ -34,6 +34,33 @@ export function recommendedTiles<T extends TileDefinition>(tiles: T[], cols: num
     return preset ? { ...tile, w: Math.min(cols, cols === 6 ? preset.tabletW ?? preset.w : preset.w), h: preset.h, group: preset.group } : { ...tile, group: "tools" };
   }).sort((a, b) => rank(a.id) - rank(b.id));
 }
+// Captured from the owner’s live desktop workspace on 2026-09-29.
+// Grid coordinates preserve the arrangement at every desktop width.
+const DESKTOP_DEFAULT: Layout = [
+  { i: "flashpoints", x: 0, y: 0, w: 6, h: 12 },
+  { i: "signal-watch", x: 6, y: 60, w: 3, h: 12 },
+  { i: "developments", x: 9, y: 40, w: 3, h: 32 },
+  { i: "situation", x: 6, y: 0, w: 6, h: 20 },
+  { i: "satellites", x: 0, y: 12, w: 6, h: 28 },
+  { i: "air-traffic", x: 0, y: 40, w: 6, h: 19 },
+  { i: "maritime-traffic", x: 9, y: 20, w: 3, h: 20 },
+  { i: "video-dw", x: 6, y: 50, w: 3, h: 10 },
+  { i: "video-france24", x: 6, y: 30, w: 3, h: 10 },
+  { i: "video-aljazeera", x: 6, y: 20, w: 3, h: 10 },
+  { i: "video-sky", x: 6, y: 40, w: 3, h: 10 },
+  { i: "signals", x: 0, y: 59, w: 6, h: 13 },
+  { i: "activity", x: 0, y: 72, w: 4, h: 17 },
+  { i: "telegram", x: 4, y: 72, w: 5, h: 17 },
+  { i: "desk-details", x: 9, y: 72, w: 3, h: 17 },
+  { i: "context", x: 3, y: 107, w: 3, h: 14 },
+  { i: "catalogue", x: 0, y: 89, w: 6, h: 18 },
+  { i: "mission", x: 6, y: 89, w: 6, h: 9 },
+  { i: "satellite-dossier", x: 6, y: 98, w: 6, h: 9 },
+  { i: "channels", x: 6, y: 107, w: 3, h: 14 },
+  { i: "social", x: 0, y: 107, w: 3, h: 14 },
+  { i: "lookup", x: 9, y: 107, w: 3, h: 14 },
+];
+
 export type SavedLayouts = Record<string, Layout>;
 const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, Math.round(n)));
 
@@ -58,9 +85,11 @@ export function parseLayouts(raw: string | null): SavedLayouts {
 }
 
 export function tileLayout(tiles: TileDefinition[], cols: number, saved: Layout = []): Layout {
+  const source = saved.length ? saved : cols === 12 ? DESKTOP_DEFAULT : [];
+  const reserved = source.filter((item) => tiles.some((tile) => tile.id === item.i));
   const placed: LayoutItem[] = [];
   for (const tile of tiles) {
-    const previous = saved.find((item) => item.i === tile.id);
+    const previous = source.find((item) => item.i === tile.id);
     const minW = Math.min(3, cols);
     const w = previous?.w ?? Math.min(tile.w, cols);
     const h = previous?.h ?? tile.h;
@@ -69,7 +98,7 @@ export function tileLayout(tiles: TileDefinition[], cols: number, saved: Layout 
     let y = previous?.y ?? 0;
     if (!previous) {
       while (true) {
-        const collision = placed.some((p) => x < p.x + p.w && x + w > p.x && y < p.y + p.h && y + h > p.y);
+        const collision = [...placed, ...reserved].some((p) => x < p.x + p.w && x + w > p.x && y < p.y + p.h && y + h > p.y);
         if (!collision) break;
         x++;
         if (x + w > cols) { x = 0; y++; }

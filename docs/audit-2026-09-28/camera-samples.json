@@ -1,0 +1,60 @@
+[
+  {
+    "source": "DriveBC",
+    "id": "bc-cam-1047",
+    "status": 200,
+    "content_type": "image/jpeg",
+    "magic": "ffd8ffe000104a4649460001",
+    "image_signature": true
+  },
+  {
+    "source": "Rijkswaterstaat",
+    "id": "nl-rws-4",
+    "status": 200,
+    "content_type": "image/jpeg",
+    "magic": "ffd8ffe000104a4649460001",
+    "image_signature": true
+  },
+  {
+    "source": "Caltrans",
+    "id": "cal-1",
+    "status": 200,
+    "content_type": "image/jpeg",
+    "magic": "ffd8ffe000104a4649460001",
+    "image_signature": true
+  },
+  {
+    "source": "TfL",
+    "id": "tfl-JamCams_00002.00865",
+    "status": 200,
+    "content_type": "image/jpeg",
+    "magic": "ffd8ffe000104a4649460001",
+    "image_signature": true
+  },
+  {
+    "source": "HK Transport Dept",
+    "id": "hk-H429F",
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "source": "LTA Singapore",
+    "id": "sin-2701",
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "source": "THB Highway Bureau",
+    "id": "tw-thb-cctv-21-0010-123-003",
+    "status": 200,
+    "content_type": "image/jpeg",
+    "magic": "ffd8ffe000104a4649460001",
+    "image_signature": true
+  },
+  {
+    "source": "DGT",
+    "id": "dgt-2",
+    "status": 200,
+    "content_type": "image/jpeg",
+    "magic": "ffd8fffe000d4c6176633536",
+    "image_signature": true
+  }
+]

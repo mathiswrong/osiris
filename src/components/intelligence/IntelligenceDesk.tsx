@@ -25,13 +25,15 @@ import { rankDevelopments } from "@/lib/intelligence/normalize";
 import { missionFor } from "@/lib/intelligence/profiles";
 import type { FlashpointResult } from "@/lib/intelligence/flashpoints";
 import BroadcastPanel from "./BroadcastPanel";
-import BroadcastWall from "./BroadcastWall";
+import TrafficPanel from "./TrafficPanel";
+import { BROADCASTS } from "@/lib/intelligence/broadcasts";
+import DashboardGrid, { DashboardTile, revealDashboardTile } from "./DashboardGrid";
 import SatelliteDossier from "./SatelliteDossier";
-import SatelliteSection from "./SatelliteSection";
+import { useSatelliteTiles } from "./SatelliteSection";
 import { FlashpointMonitor, FlashpointDetail } from "./FlashpointMonitor";
 import { HoverPreview } from "./HoverPreview";
 import InvestigationWorkspace from "./InvestigationWorkspace";
-import SignalsWorkspace, { SignalPulse, useSignalsFeed } from "./SignalsWorkspace";
+import { useSignalTiles, SignalPulse, useSignalsFeed } from "./SignalsWorkspace";
 import "./desk.css";
 const SatelliteGlobe = dynamic(() => import("./SatelliteGlobe"), {
   ssr: false,
@@ -103,6 +105,8 @@ export default function IntelligenceDesk() {
   const [satelliteActive, setSatelliteActive] = useState(false);
   const activateSatellite = useCallback(() => setSatelliteActive(true), []);
   const { feed: signalFeed, feedError: signalError } = useSignalsFeed(refresh);
+  const signalTiles = useSignalTiles({ feed: signalFeed, feedError: signalError });
+  const satelliteTiles = useSatelliteTiles({ satellites, selectedId: satelliteId, onSelect: setSatelliteId, active: satelliteActive, onActivate: activateSatellite });
   useEffect(() => {
     try {
       if (localStorage.getItem("knuckletat:theme") === "night")
@@ -284,9 +288,7 @@ export default function IntelligenceDesk() {
   );
   useEffect(() => {
     if (mode === "global" && activeInvestigation)
-      document
-        .getElementById("investigation")
-        ?.scrollIntoView({ behavior: "instant", block: "start" });
+      revealDashboardTile("investigation-tile");
     // Only an explicit watch/mode change should move the reading position.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeInvestigation?.id, mode]);
@@ -340,17 +342,21 @@ export default function IntelligenceDesk() {
           <Globe2 size={14} />
           Global
         </button>
+        <button aria-label="Jump to maps on this page" onClick={() => {
+          switchMode("global");
+          window.setTimeout(() => revealDashboardTile("situation"), 0);
+        }}><Globe2 size={14} /> Maps ↓</button>
         <button aria-label="Jump to Satellites on this page" onClick={() => {
           switchMode("global");
           setSatelliteActive(true);
-          window.setTimeout(() => document.getElementById("satellites")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+          window.setTimeout(() => revealDashboardTile("satellites"), 0);
         }}>
           <Satellite size={14} />
           Satellites ↓
         </button>
         <button aria-label="Jump to Signals on this page" onClick={() => {
           switchMode("global");
-          window.setTimeout(() => document.getElementById("signals")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+          window.setTimeout(() => revealDashboardTile("signals"), 0);
         }}>
           <Radio size={14} />
           Signals ↓
@@ -475,21 +481,24 @@ export default function IntelligenceDesk() {
           </div>
         </section>
       ) : (
-        <>
-          {!space && (
-            <div className="desk-watch-grid">
+        <DashboardGrid>
+            <DashboardTile id="flashpoints" title="Flashpoint Monitor" w={6} h={16}>
               <FlashpointMonitor
                 result={flashpoints}
                 selected={selected}
                 onSelect={investigate}
                 error={monitorError}
               />
+            </DashboardTile>
+            <DashboardTile id="signal-watch" title="Signal watch" w={3} h={16}>
               <SignalPulse feed={signalFeed} feedError={signalError} />
-            </div>
-          )}
-          {!space && <BroadcastWall />}
-          {!space && <SignalsWorkspace feed={signalFeed} feedError={signalError} />}
+            </DashboardTile>
+            {BROADCASTS.map((channel, index) => <DashboardTile key={channel.id} id={`video-${channel.id}`} title={channel.name} w={3} h={11} kind="video"><BroadcastPanel fixedChannel={index} /></DashboardTile>)}
+            <DashboardTile id="air-traffic" title="Air traffic" w={3} h={22} kind="map"><TrafficPanel kind="aircraft" theme={theme} refresh={refresh} /></DashboardTile>
+            <DashboardTile id="maritime-traffic" title="Maritime traffic" w={3} h={22} kind="map"><TrafficPanel kind="vessel" theme={theme} refresh={refresh} /></DashboardTile>
+            {signalTiles}
           {!space && activeInvestigation && (
+            <DashboardTile id="investigation-tile" title="Investigation" w={12} h={24}>
             <InvestigationWorkspace
               flashpoint={activeInvestigation}
               related={(flashpoints?.data || []).filter(
@@ -506,11 +515,12 @@ export default function IntelligenceDesk() {
               onSatellite={(id) => {
                 setSatelliteId(id);
                 setSatelliteActive(true);
-                window.setTimeout(() => document.getElementById("satellites")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+                window.setTimeout(() => revealDashboardTile("satellites"), 0);
               }}
             />
+            </DashboardTile>
           )}
-          <div className="desk-main-grid">
+          <DashboardTile id="situation" title="Global situation" w={3} h={22} kind="map">
             <section className="desk-panel">
               <div className="desk-panel-title">
                 <h1>{space ? "Orbital traffic" : "Global situation"}</h1>
@@ -648,8 +658,8 @@ export default function IntelligenceDesk() {
                 </span>
               </div>
             </section>
-            <aside className="desk-side">
-              {!space && <div className="desk-mobile-broadcast"><BroadcastPanel /></div>}
+          </DashboardTile>
+          <DashboardTile id="context" title="Evidence context" w={6} h={17}>
               <section className="desk-panel desk-context">
                 <div className="desk-panel-title">
                   <h2>{space ? "Mission inspector" : "Evidence context"}</h2>
@@ -771,16 +781,9 @@ export default function IntelligenceDesk() {
                   </p>
                 )}
               </section>
-            </aside>
-          </div>
-          <SatelliteSection
-            satellites={satellites}
-            selectedId={satelliteId}
-            onSelect={setSatelliteId}
-            active={satelliteActive}
-            onActivate={activateSatellite}
-          />
-          <div className="desk-bottom-grid">
+          </DashboardTile>
+          {satelliteTiles}
+          <DashboardTile id="developments" title="Developments" w={3} h={18}>
             <section className="desk-panel">
               <div className="desk-panel-title">
                 <h2>{space ? "Find a satellite" : "Developments"}</h2>
@@ -948,7 +951,9 @@ export default function IntelligenceDesk() {
                 )}
               </div>
             </section>
-            <section className="desk-panel" id="desk-details">
+          </DashboardTile>
+          <DashboardTile id="desk-details" title="Selected development" w={3} h={18}>
+            <section className="desk-panel">
               <div className="desk-panel-title">
                 <h2>
                   {space
@@ -1110,8 +1115,8 @@ export default function IntelligenceDesk() {
                 )}
               </div>
             </section>
-          </div>
-        </>
+          </DashboardTile>
+        </DashboardGrid>
       )}
       <footer className="desk-footer">
         <span>KNUCKLETAT</span>

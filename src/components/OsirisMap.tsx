@@ -36,7 +36,7 @@ interface OsirisMapProps {
   onEntityClick?: (entity: any) => void;
   onMouseCoords?: (coords: { lat: number; lng: number }) => void;
   onRightClick?: (coords: { lat: number; lng: number }) => void;
-  onViewStateChange?: (vs: { zoom: number; latitude: number }) => void;
+  onViewStateChange?: (vs: { zoom: number; latitude: number; longitude: number }) => void;
   /** `alertId` also opens that Live Alert's pin once the camera arrives.
    *  `duration` overrides the default 2 s flight. */
   flyToLocation?: { lat: number; lng: number; zoom?: number; alertId?: string; duration?: number; ts: number } | null;
@@ -939,7 +939,7 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
         lastRightClick = { at: now, x, y };
       }
     });
-    const reportViewState = () => { const c = map.getCenter(); onViewStateChange?.({ zoom: map.getZoom(), latitude: c.lat }); };
+    const reportViewState = () => { const c = map.getCenter(); onViewStateChange?.({ zoom: map.getZoom(), latitude: c.lat, longitude: c.lng }); };
     map.on('load', reportViewState);
     map.on('moveend', reportViewState);
     // Lightweight settled-view diagnostics for camera/terrain regressions.

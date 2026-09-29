@@ -79,10 +79,10 @@ async function airRequest(url: string) {
     state.ktAircraftQueued!--;
   }
 }
-export async function regionalTraffic(lat: number, lng: number) {
+export async function regionalTraffic(lat: number, lng: number, kind: "all" | "aircraft" | "vessel" = "all") {
   const key = `${lat.toFixed(1)}_${lng.toFixed(1)}`;
   const radiusKm = 463; // Provider maximum 250 nautical miles.
-  const aircraft = trafficRead(
+  const aircraft = kind === "vessel" ? null : trafficRead(
     {
       id: `adsbfi_${key}`,
       name: "adsb.fi",
@@ -96,7 +96,7 @@ export async function regionalTraffic(lat: number, lng: number) {
         `https://opendata.adsb.fi/api/v3/lat/${lat}/lon/${lng}/dist/250`,
       ),
   );
-  const vessels = trafficRead(
+  const vessels = kind === "aircraft" ? null : trafficRead(
     {
       id: `aisstream_${key}`,
       name: "AIS Stream",
@@ -186,7 +186,7 @@ export async function regionalTraffic(lat: number, lng: number) {
   return {
     center: { lat, lng },
     radiusKm,
-    results: await Promise.all([aircraft, vessels]),
+    results: (await Promise.all([aircraft, vessels])).filter((result): result is SourceResult<TrafficContact> => result !== null),
     generatedAt: new Date().toISOString(),
   };
 }

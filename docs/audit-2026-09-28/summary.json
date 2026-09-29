@@ -1,0 +1,207 @@
+[
+  {
+    "endpoint": "health",
+    "checked_at": "2026-09-28T04:03:31.245765+00:00",
+    "status": 200,
+    "seconds": 0.37,
+    "bytes": 432,
+    "counts": {},
+    "metadata": "{'status': 'serving', 'scope': 'process', 'checks_performed': 'none', 'detail': 'The application process is up and answering requests. Upstream feed availability is not checked by this endpoint \u2014 query the individual routes for that.', 'platform': 'OSIRIS', 'version': '1.0.0', 'uptime_seconds': 503, 'timestamp': '2026-09-28T04:03:31.598Z'}"
+  },
+  {
+    "endpoint": "satellites",
+    "checked_at": "2026-09-28T04:03:31.246196+00:00",
+    "status": 200,
+    "seconds": 0.55,
+    "bytes": 2735240,
+    "counts": {
+      "satellites": 18783
+    },
+    "metadata": "{'total': 18783, 'category_counts': {'other': 6839, 'military': 429, 'science': 16, 'earth_obs': 44, 'comms': 11340, 'navigation': 115}, 'source': 'memory-cache', 'raw_count': 18789, 'timestamp': '2026-09-28T04:03:31.574Z'}"
+  },
+  {
+    "endpoint": "flights",
+    "checked_at": "2026-09-28T04:03:31.246297+00:00",
+    "error": "[Errno 54] Connection reset by peer",
+    "seconds": 18.24
+  },
+  {
+    "endpoint": "maritime",
+    "checked_at": "2026-09-28T04:03:31.246371+00:00",
+    "status": 200,
+    "seconds": 0.37,
+    "bytes": 10546,
+    "counts": {
+      "ports": 52,
+      "chokepoints": 10,
+      "ships": 0
+    },
+    "metadata": "{'total_ports': 52, 'total_chokepoints': 10, 'total_ships': 0, 'timestamp': '2026-09-28T04:03:31.593Z'}"
+  },
+  {
+    "endpoint": "cctv",
+    "checked_at": "2026-09-28T04:03:31.617173+00:00",
+    "status": 200,
+    "seconds": 0.41,
+    "bytes": 9628108,
+    "counts": {
+      "cameras": 39505,
+      "regions": 55,
+      "pendingRegions": 2
+    },
+    "metadata": "{'total': 39505, 'sources': {'YouTube Live': 19, 'TfL': 890, 'Caltrans': 2000, 'Butler County, OH': 2, 'Cincinnati, OH': 2, 'City of Ottawa': 428, 'Quebec 511': 680, '511 Ontario': 3, 'City of Toronto': 336, 'DriveBC': 1066, 'Rijkswaterstaat': 52, 'ASFINAG': 1807, 'LTA Singapore': 8, 'UAB / KAMEPA': 1, 'meteo.chavo.biz': 1, 'Smart Burgas': 1, 'Attiki Odos': 2, 'Uzivo Beograd': 1, 'AMSS / GKPP': 1, 'Neotel / GKPP': 2, 'home-solutions.bg': 1, 'Live Traffic': 241, 'SkylineWebcams': 681, 'APRR': 20, 'AREA': 7, 'DGT': 1920, 'Urz\u0105d Miasta S\u0142upsk': 1, 'nadmorski24.pl': 71, 'ANN News / YouTube': 1, 'YouTube': 21, 'MLIT river.go.jp': 33, 'chuv.ch': 1, 'Fintraffic': 810, 'HK Transport Dept': 1013, 'UDOT': 2081, 'Vegager\u00f0in': 497, 'THB Highway Bureau': 2196, 'The Real Samui Webcam': 6, 'NZTA': 252, 'Via Lietuva': 295, 'City of Edmonton': 58, 'ODOT TripCheck': 1140, 'MDOT MiDrive': 804, 'INDOT TrafficWise': 741, 'NDOT': 652, 'LADOTD': 336, 'FDOT': 4960, 'GDOT': 4330, 'NCDOT': 1152, 'ADOT': 644, 'TxDOT': 4362, 'OpenCCTV / airlive': 1, 'OpenCCTV / airportwebcams': 2, 'OpenCCTV / ansan': 4, 'OpenCCTV / biodic': 2, 'OpenCCTV / busan': 18, 'OpenCCTV / camstreamer': 16, 'OpenCCTV / cbr-mlit': 1, 'OpenCCTV / changwon': 6, 'OpenCCTV / chungju': 3, 'OpenCCTV / daegu': 9, 'OpenCCTV / dsat': 17, 'OpenCCTV / earthcam': 2, 'OpenCCTV / geoje': 2, 'OpenCCTV / gimpo': 3, 'OpenCCTV / goyang': 9, 'OpenCCTV / gwangju': 6, 'OpenCCTV / hanshin-expressway': 1, 'OpenCCTV / hko-webcams': 6, 'OpenCCTV / hongkong': 150, 'OpenCCTV / incheon': 11, 'OpenCCTV / jma-volcam': 5, 'OpenCCTV / kaiho': 4, 'OpenCCTV / kkr': 17, 'OpenCCTV / mlit-kanto': 3, 'OpenCCTV / mlit-yamagata': 1, 'OpenCCTV / nexco-japan': 6, 'OpenCCTV / niigata': 9, 'OpenCCTV / numazu-snow': 1, 'OpenCCTV / opensnow': 1, 'OpenCCTV / opentopia': 3"
+  },
+  {
+    "endpoint": "live-news",
+    "checked_at": "2026-09-28T04:03:31.619072+00:00",
+    "status": 200,
+    "seconds": 0.13,
+    "bytes": 3677,
+    "counts": {
+      "feeds": 15,
+      "categories": 5
+    },
+    "metadata": "{'total': 15, 'timestamp': '2026-09-28T04:03:31.729Z'}"
+  },
+  {
+    "endpoint": "news",
+    "checked_at": "2026-09-28T04:03:31.749207+00:00",
+    "status": 200,
+    "seconds": 2.75,
+    "bytes": 185515,
+    "counts": {
+      "news": 114,
+      "sources": 18
+    },
+    "metadata": "{'total': 114, 'timestamp': '2026-09-28T04:03:34.403Z'}"
+  },
+  {
+    "endpoint": "weather",
+    "checked_at": "2026-09-28T04:03:31.819279+00:00",
+    "status": 200,
+    "seconds": 0.16,
+    "bytes": 17239,
+    "counts": {
+      "events": 46
+    },
+    "metadata": "{'total': 46, 'timestamp': '2026-09-28T04:03:31.915Z'}"
+  },
+  {
+    "endpoint": "fires",
+    "checked_at": "2026-09-28T04:03:31.978555+00:00",
+    "status": 200,
+    "seconds": 1.58,
+    "bytes": 264453,
+    "counts": {
+      "fires": 2027
+    },
+    "metadata": "{'total': 2027, 'source': 'NASA-FIRMS (VIIRS)', 'timestamp': '2026-09-28T04:03:33.447Z'}"
+  },
+  {
+    "endpoint": "gdelt",
+    "checked_at": "2026-09-28T04:03:32.081558+00:00",
+    "status": 200,
+    "seconds": 0.18,
+    "bytes": 113751,
+    "counts": {
+      "events": 248
+    },
+    "metadata": "{'total': 248, 'timestamp': '2026-09-28T04:03:32.178Z', 'source': 'GDACS RSS API'}"
+  },
+  {
+    "endpoint": "gdelt-events",
+    "checked_at": "2026-09-28T04:03:32.258859+00:00",
+    "status": 200,
+    "seconds": 0.35,
+    "bytes": 164172,
+    "counts": {
+      "events": 435
+    },
+    "metadata": "{'total': 435, 'scanned': 461, 'window': '20260928040000.export.CSV.zip', 'source': 'GDELT 2.0 Events', 'timestamp': '2026-09-28T04:03:32.513Z'}"
+  },
+  {
+    "endpoint": "infrastructure",
+    "checked_at": "2026-09-28T04:03:32.613713+00:00",
+    "status": 200,
+    "seconds": 0.15,
+    "bytes": 12622,
+    "counts": {
+      "infrastructure": 64
+    },
+    "metadata": "{'total': 64, 'timestamp': '2026-09-28T04:03:32.739Z'}"
+  },
+  {
+    "endpoint": "space-weather",
+    "checked_at": "2026-09-28T04:03:32.762379+00:00",
+    "status": 200,
+    "seconds": 0.24,
+    "bytes": 292,
+    "counts": {
+      "alerts": 0,
+      "solar_flares": 1
+    },
+    "metadata": "{'kp_index': 0, 'kp_available': True, 'storm_level': 'Quiet', 'storm_color': '#00E676', 'kp_timestamp': '2026-09-28T03:57:00', 'timestamp': '2026-09-28T04:03:32.978Z'}"
+  },
+  {
+    "endpoint": "markets",
+    "checked_at": "2026-09-28T04:03:32.999381+00:00",
+    "status": 200,
+    "seconds": 0.67,
+    "bytes": 8470,
+    "counts": {
+      "scm_alerts": 0
+    },
+    "metadata": "{'count': 28, 'timestamp': '2026-09-28T04:03:33.648Z'}"
+  },
+  {
+    "endpoint": "cloudflare-radar",
+    "checked_at": "2026-09-28T04:03:33.558287+00:00",
+    "error": "HTTP Error 503: Service Unavailable",
+    "seconds": 0.11
+  },
+  {
+    "endpoint": "sdk/stream",
+    "checked_at": "2026-09-28T04:03:33.668735+00:00",
+    "error": "[Errno 54] Connection reset by peer",
+    "seconds": 15.81
+  },
+  {
+    "endpoint": "conflicts",
+    "checked_at": "2026-09-28T04:03:33.669534+00:00",
+    "status": 200,
+    "seconds": 0.27,
+    "bytes": 12130,
+    "counts": {
+      "zones": 15,
+      "liveEvents": 13,
+      "sources": 1
+    },
+    "metadata": "{'totalZones': 15, 'totalLiveEvents': 13, 'activeWarzones': 6, 'timestamp': '2026-09-28T04:03:33.918Z', 'refreshInterval': 300}"
+  },
+  {
+    "endpoint": "frontlines",
+    "checked_at": "2026-09-28T04:03:33.941839+00:00",
+    "status": 200,
+    "seconds": 0.46,
+    "bytes": 626631,
+    "counts": {},
+    "metadata": "{'timestamp': '2026-09-28T04:03:34.259Z'}"
+  },
+  {
+    "endpoint": "cyber-attacks",
+    "checked_at": "2026-09-28T04:03:34.407705+00:00",
+    "status": 200,
+    "seconds": 0.36,
+    "bytes": 1711,
+    "counts": {
+      "indicators": 5
+    },
+    "metadata": "{'total': 5, 'online': 1, 'fetched_at': '2026-09-28T04:03:34.743Z', 'source': 'abuse.ch Feodo Tracker', 'source_url': 'https://feodotracker.abuse.ch/browse/'}"
+  },
+  {
+    "endpoint": "malware",
+    "checked_at": "2026-09-28T04:03:34.499300+00:00",
+    "error": "[Errno 54] Connection reset by peer",
+    "seconds": 14.98
+  }
+]

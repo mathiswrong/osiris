@@ -1,0 +1,8 @@
+{
+  "testedAt": "2026-09-28T04:07:30.431Z",
+  "results": [
+    "Confirmed: image proxy permits HTML and active SVG content types. No exploit sent.",
+    "Confirmed: a successful empty source refresh retains the previous nonempty warning.",
+    "Confirmed: 15 synthetic rejected requests are reported as 15 open ports. No network scan performed."
+  ]
+}

@@ -1,0 +1,68 @@
+[
+  {
+    "endpoint": "/api/air-quality",
+    "status": 200,
+    "seconds": 0.19,
+    "data": "{'stations': 0, 'total': 0, 'timestamp': '2026-09-28T04:06:04.309Z'}"
+  },
+  {
+    "endpoint": "/api/radar",
+    "status": 200,
+    "seconds": 1.37,
+    "data": "{'outages': 13, 'total': 13, 'timestamp': '2026-09-28T04:06:05.491Z', 'source': 'IODA \u2014 Georgia Tech Internet Outage Detection'}"
+  },
+  {
+    "endpoint": "/api/scm-suppliers",
+    "status": 200,
+    "seconds": 1.63,
+    "data": "{'suppliers': 14, 'total': 14, 'critical_count': 0, 'timestamp': '2026-09-28T04:06:05.747Z'}"
+  },
+  {
+    "endpoint": "/api/country-risk",
+    "status": 200,
+    "seconds": 0.14,
+    "data": "{'countries': 20, 'exchanges': 12, 'open_exchanges': 6, 'total_exchanges': 12, 'timestamp': '2026-09-28T04:06:04.451Z'}"
+  },
+  {
+    "endpoint": "/api/sdk/ingest",
+    "status": 200,
+    "seconds": 0.11,
+    "data": "{'sdk': 'polybolos', 'version': '1.0.0', 'entityCount': 0, 'recentIngestions': 0, 'timestamp': '2026-09-28T04:06:04.565Z'}"
+  },
+  {
+    "endpoint": "/api/satellites/orbit?norad=25544",
+    "status": 400,
+    "seconds": 0.12,
+    "data": "{'error': 'numeric NORAD id required'}"
+  },
+  {
+    "endpoint": "/data/submarine-cables.json",
+    "status": 200,
+    "seconds": 0.23,
+    "data": "{'type': 'FeatureCollection', 'features': 717}"
+  },
+  {
+    "endpoint": "/api/sentinel?lat=26.56&lng=56.25&radius=1&days=7",
+    "status": 200,
+    "seconds": 0.27,
+    "data": "{'source': 'element84', 'scenes': 10, 'total': 10, 'bbox': 4, 'datetime': '2026-09-21T04:06:05Z/2026-09-28T04:06:05Z', 'timestamp': '2026-09-28T04:06:05.190Z'}"
+  },
+  {
+    "endpoint": "/api/cloudflare-radar",
+    "status": 503,
+    "seconds": 0.11,
+    "data": "{'configured': False, 'outages': 0, 'attack_origins': 0, 'error': 'Cloudflare Radar not configured', 'hint': 'Set CLOUDFLARE_API_TOKEN (Cloudflare account \u2192 API Tokens \u2192 Radar: Read) in .env'}"
+  },
+  {
+    "endpoint": "/api/balloons",
+    "status": 404,
+    "seconds": 0.12,
+    "data": "{'body': '<!DOCTYPE html><html lang=\"en\" dir=\"ltr\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width,'}"
+  },
+  {
+    "endpoint": "/api/radiation",
+    "status": 404,
+    "seconds": 0.11,
+    "data": "{'body': '<!DOCTYPE html><html lang=\"en\" dir=\"ltr\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width,'}"
+  }
+]

@@ -1,9 +1,10 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { Satellite, Search } from "lucide-react";
 import { missionFor } from "@/lib/intelligence/profiles";
 import type { SatelliteResult } from "@/lib/intelligence/types";
+import { DashboardTile } from "./DashboardGrid";
 import SatelliteDossier from "./SatelliteDossier";
 import { HoverPreview } from "./HoverPreview";
 
@@ -16,24 +17,23 @@ const date = (value: string) => new Date(value).toLocaleString(undefined, {
 }) + " UTC";
 const purposes = ["all", "Communications", "Earth observation", "Navigation", "Research", "Not documented"];
 
-export default function SatelliteSection({ satellites, selectedId, onSelect, active, onActivate }: {
+export function useSatelliteTiles({ satellites, selectedId, onSelect, active, onActivate }: {
   satellites: SatelliteResult | null;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   active: boolean;
   onActivate: () => void;
 }) {
-  const sectionRef = useRef<HTMLElement>(null);
   const [query, setQuery] = useState("");
   const [purpose, setPurpose] = useState("all");
   const [limit, setLimit] = useState(100);
-  useEffect(() => {
-    if (active) return;
+  const sectionRef = useCallback((node: HTMLElement | null) => {
+    if (active || !node) return;
     if (!window.IntersectionObserver) { onActivate(); return; }
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) { onActivate(); observer.disconnect(); }
     }, { rootMargin: "600px" });
-    if (sectionRef.current) observer.observe(sectionRef.current);
+    observer.observe(node);
     return () => observer.disconnect();
   }, [active, onActivate]);
   const matches = useMemo(() => (satellites?.data || []).filter((satellite) => {
@@ -44,13 +44,8 @@ export default function SatelliteSection({ satellites, selectedId, onSelect, act
   const selected = satellites?.data.find((satellite) => satellite.id === selectedId);
   const reviewedCount = useMemo(() => (satellites?.data || []).filter((satellite) => missionFor(satellite)).length, [satellites]);
   const select = (id: string | null) => { onSelect(id); setLimit(100); };
-  return <section id="satellites" ref={sectionRef} className="desk-satellites" aria-label="Satellite tracking and mission intelligence">
-    <div className="desk-panel desk-satellite-intro">
-      <div className="desk-panel-title"><h2><Satellite size={17} /> Satellites</h2><span>{satellites ? `${satellites.data.length.toLocaleString()} TRACKED OBJECTS` : "CONNECTING TO CELESTRAK"}</span></div>
-      <p>Search public orbital elements, follow predicted positions, and inspect documented missions. Positions are predictions from element sets, not live observations.</p>
-    </div>
-    <div className="desk-satellite-grid">
-      <section className="desk-panel">
+  return [<DashboardTile key="satellites" id="satellites" title="Orbital traffic" w={3} h={22} kind="map">
+    <section ref={sectionRef} className="desk-panel desk-orbital-panel">
         <div className="desk-panel-title"><h2>Orbital traffic</h2><span>PREDICTED POSITIONS</span></div>
         <div className="desk-map-caption">{satellites ? `${satellites.data.length.toLocaleString()} active objects · ${reviewedCount.toLocaleString()} with mission context · select an object to inspect` : "Loading public orbital elements…"}</div>
         <div className="desk-space-controls">
@@ -70,6 +65,7 @@ export default function SatelliteSection({ satellites, selectedId, onSelect, act
         {active ? <SatelliteGlobe contextOrbits={satellites?.contextOrbits || []} satellites={matches} selected={selected || null} orbit={satellites?.selectedId === selectedId ? satellites.orbit || [] : []} onSelect={(id) => select(id)} /> : <div className="desk-map-loading">Orbital view loads when you reach this section…</div>}
         <div className="desk-map-caption desk-map-bottom"><span>SGP4 orbital predictions · CelesTrak GP/OMM</span><span>{satellites?.health.state || "Connecting CelesTrak"}</span></div>
       </section>
+    </DashboardTile>, <DashboardTile key="mission" id="mission" title="Mission inspector" w={3} h={21}>
       <aside className="desk-panel desk-context">
         <div className="desk-panel-title"><h2>Mission inspector</h2><span>ORBITAL ELEMENTS</span></div>
         <strong>{selected?.name || "Select a satellite to investigate"}</strong>
@@ -88,8 +84,7 @@ export default function SatelliteSection({ satellites, selectedId, onSelect, act
           <a href="#satellite-dossier">Full dossier, disclosures & sources ↓</a>
         </>}
       </aside>
-    </div>
-    <div className="desk-bottom-grid desk-satellite-bottom">
+    </DashboardTile>, <DashboardTile key="catalogue" id="catalogue" title="Satellite catalogue" w={3} h={21}>
       <section className="desk-panel">
         <div className="desk-panel-title"><h2>Find a satellite</h2><span>{matches.length} MATCHES</span></div>
         <div className="desk-records">
@@ -104,7 +99,8 @@ export default function SatelliteSection({ satellites, selectedId, onSelect, act
           {matches.length > limit && <div className="desk-empty">Showing {limit} of {matches.length} records. <button onClick={() => setLimit((value) => value + 100)}>Show next 100</button></div>}
         </div>
       </section>
-      <section className="desk-panel" id="satellite-dossier">
+    </DashboardTile>, <DashboardTile key="satellite-dossier" id="satellite-dossier" title="Satellite dossier" w={6} h={17}>
+      <section className="desk-panel">
         <div className="desk-panel-title"><h2>Satellite dossier</h2><span>PROVENANCE</span></div>
         <div className="desk-detail" aria-live="polite">
           {selected ? <><h2>{selected.name}</h2><SatelliteDossier satellite={selected} /><h3>Orbit & predicted position</h3>
@@ -113,6 +109,5 @@ export default function SatelliteSection({ satellites, selectedId, onSelect, act
           </> : <div className="desk-empty"><Satellite size={28} /><h2>Search, select, follow</h2><p>Search a spacecraft by name or catalogue ID. Select it to view its position, predicted orbital path and the age of its source elements.</p></div>}
         </div>
       </section>
-    </div>
-  </section>;
+    </DashboardTile>];
 }

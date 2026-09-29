@@ -1,0 +1,116 @@
+/* Tile dimensions, rather than viewport width, drive the content inside a brick. */
+.desk-bricks { margin: 12px 0; min-width: 0; }
+.desk-layout-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 12px 0; }
+.desk-layout-toolbar > div:first-child { display: grid; gap: 3px; }
+.desk-layout-toolbar strong { display: flex; gap: 7px; align-items: center; font-size: 14px; }
+.desk-layout-toolbar span { color: var(--desk-muted); font-size: 12px; }
+.desk-layout-actions { display: flex; gap: 7px; flex-shrink: 0; }
+.desk-layout-actions button { display: flex; align-items: center; gap: 6px; }
+.desk-bricks .desk-tile { display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--desk-edge); border-radius: 7px; background: var(--desk-panel); container-type: inline-size; scroll-margin-top: 12px; }
+.desk-tile-bar { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--desk-edge); background: var(--desk-soft); border-radius: 7px 7px 0 0; min-height: 39px; flex-shrink: 0; }
+.intelligence-desk .desk-tile-grip, .intelligence-desk .desk-tile-expand { border: 0; background: transparent; display: flex; align-items: center; gap: 7px; padding: 9px; border-radius: 5px; }
+.intelligence-desk .desk-tile-grip { cursor: grab; min-width: 0; flex: 1; text-align: left; touch-action: none; font-weight: 700; font-size: 12px; }
+.desk-tile-grip span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.desk-tile-grip svg { flex: none; color: var(--desk-muted); }
+.intelligence-desk .desk-tile-grip:active { cursor: grabbing; }
+.intelligence-desk .desk-tile-grip:disabled { cursor: default; opacity: 1; }
+.intelligence-desk .desk-tile-expand { flex: none; color: var(--desk-accent); }
+.intelligence-desk .desk-tile-expand:hover { background: var(--desk-hover); }
+.desk-tile-content { flex: 1; min-height: 0; min-width: 0; overflow: auto; overscroll-behavior: contain; border-radius: 0 0 7px 7px; overflow-wrap: anywhere; }
+.desk-tile-content > .desk-panel, .desk-tile-content > .desk-signal-pulse { margin: 0; border: 0; border-radius: 0; min-height: 100%; }
+.desk-tile-content > .desk-panel > .desk-panel-title h1, .desk-tile-content > .desk-panel > .desk-panel-title h2, .desk-tile-content > .desk-signal-pulse > .desk-panel-title h2 { display: none; }
+.desk-tile-content .desk-panel-title { flex-wrap: wrap; gap: 5px; flex-shrink: 0; }
+.desk-tile-content .desk-panel-title > span { white-space: normal; }
+.desk-tile-content .desk-records, .desk-tile-content .desk-detail, .desk-tile-content .desk-flash-grid { max-height: none; overflow: visible; }
+.desk-tile-content .desk-context { min-height: 100%; }
+.desk-tile-content .desk-flash-toolbar { flex-wrap: wrap; }
+.desk-tile-content .desk-filters { flex-wrap: wrap; }
+.desk-tile-content .desk-search { min-width: 0; flex: 1 1 180px; }
+.desk-tile-content .desk-signals { margin: 0; gap: 8px; }
+.desk-tile-content .desk-signals-intro { border: 0; }
+.desk-tile-content .desk-signal-priority { grid-template-columns: 1fr; gap: 8px; padding: 0 10px 10px; }
+.desk-tile-content .desk-tile-prose { padding: 12px 16px; }
+.desk-tile-prose > h3 { margin: 0 0 8px; }
+.desk-tile-prose > p, .desk-tile-content > .desk-panel > p { font-size: 13px; color: var(--desk-muted); line-height: 1.5; }
+.desk-tile-content > .desk-panel:not(.desk-context):not(.desk-tile-prose):not(.desk-connector-panel) > p { margin: 12px 16px; }
+.desk-tile-content .desk-signal-topic summary { display: grid; grid-template-columns: 8px minmax(0, 1fr); gap: 5px 8px; }
+.desk-tile-content .desk-signal-topic .desk-signal-topic-analysis { grid-column: 2; text-align: left; white-space: normal; }
+.desk-tile-content .desk-signal-watch-topics > div { grid-template-columns: 8px minmax(0, 1fr); }
+.desk-tile-content .desk-signal-watch-topics small { grid-column: 2; font-size: 11px; }
+.desk-tile-content .desk-lookup-form { flex-wrap: wrap; }
+/* A resized map or video fills the available tile without stretching its media. */
+.desk-tile-map .desk-tile-content > .desk-panel, .desk-tile-video .desk-broadcast { display: flex; flex-direction: column; height: 100%; }
+.desk-tile-map .desk-map-wrap { flex: 1; min-height: 180px; }
+.desk-tile-map .desk-map { position: absolute; inset: 0; height: 100%; }
+.desk-tile-map .desk-map-loading { flex: 1; height: auto; min-height: 180px; }
+.desk-tile-map .desk-map-caption, .desk-tile-map .desk-space-controls { flex-shrink: 0; }
+.desk-tile-map .orbital-workspace { flex: 1; display: flex; flex-direction: column; min-height: 260px; }
+.desk-tile-map .orbital-canvas-wrap { flex: 1; min-height: 200px; }
+.desk-tile-map .orbital-canvas { position: absolute; inset: 0; height: 100%; }
+.desk-tile-map .orbital-toolbar, .desk-tile-map .orbital-legend, .desk-tile-map .orbital-note { flex-shrink: 0; }
+.desk-tile-video .desk-panel-title { display: none; }
+.desk-tile-video .desk-video { flex: 1; height: auto; min-height: 100px; aspect-ratio: auto; }
+.desk-tile-video .desk-video iframe, .desk-tile-video .desk-video video { width: 100%; height: 100%; object-fit: contain; }
+.desk-tile-video .desk-media-note { flex-shrink: 0; }
+.desk-grid-interacting .desk-tile-content { pointer-events: none; }
+.desk-bricks .react-grid-item.react-grid-placeholder { background: var(--desk-accent); opacity: .13; border: 2px dashed var(--desk-accent); border-radius: 7px; }
+.desk-bricks .react-grid-item.resizing, .desk-bricks .react-grid-item.react-draggable-dragging { box-shadow: 0 12px 35px #0004; z-index: 20; }
+.desk-bricks .react-resizable-handle { width: 28px; height: 28px; z-index: 5; background: none; touch-action: none; }
+.desk-bricks .react-resizable-handle::after { border-color: var(--desk-accent); width: 9px; height: 9px; right: 6px; bottom: 6px; }
+/* Override the grid transform in place so expansion keeps players and map state. */
+.desk-bricks .desk-tile-full { position: fixed !important; inset: 0 !important; transform: none !important; width: 100vw !important; height: 100dvh !important; z-index: 10000 !important; border-radius: 0; transition: none !important; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+.desk-tile-full > .react-resizable-handle { display: none; }
+.desk-tile-full .desk-tile-bar { border-radius: 0; }
+.desk-tile-full .desk-tile-content { overscroll-behavior: contain; }
+.desk-tile-full .desk-signal-priority { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.desk-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@container (max-width: 750px) {
+  .intelligence-desk .desk-flash-card { grid-template-columns: 20px 7px minmax(80px, 120px) minmax(0, 1fr) 70px; gap: 7px; }
+  .desk-flash-topic { display: none; }
+  .desk-tile-content .desk-flash-toolbar p span { display: none; }
+}
+@container (max-width: 450px) {
+  .intelligence-desk .desk-flash-card { grid-template-columns: 18px 7px minmax(0, 1fr) 70px; height: auto; min-height: 58px; }
+  .desk-flash-headline { grid-column: 3 / 5; grid-row: 2; }
+  .desk-flash-count { grid-column: 4; grid-row: 1; }
+  .desk-tile-content .desk-map-bottom { flex-wrap: wrap; }
+  .desk-tile-content .desk-filters select { max-width: 100%; }
+  .desk-tile-content .orbital-heading { left: 12px; top: 12px; }
+  .desk-tile-content .orbital-heading strong { font-size: 18px; }
+}
+@media (max-width: 700px) {
+  .desk-layout-toolbar { align-items: stretch; flex-direction: column; gap: 9px; }
+  .desk-layout-actions button { flex: 1; justify-content: center; min-height: 40px; }
+  .intelligence-desk .desk-tile-grip, .intelligence-desk .desk-tile-expand { min-height: 44px; }
+  .desk-bricks .react-resizable-handle { width: 34px; height: 34px; }
+}
+@media (prefers-reduced-motion: reduce) { .desk-bricks .react-grid-item { transition: none; } }
+
+/* All four maps share one desktop row; their own controls wrap at tile width. */
+.desk-traffic-controls { display: flex; flex-wrap: wrap; gap: 7px; padding: 10px; border-bottom: 1px solid var(--desk-edge); flex-shrink: 0; }
+.desk-traffic-controls label { display: flex; flex: 1 1 145px; min-width: 0; align-items: center; gap: 6px; }
+.desk-traffic-controls label > span { font-size: 11px; color: var(--desk-muted); }
+.desk-traffic-controls select { width: 100%; min-width: 0; }
+.desk-traffic-actions { display: flex; gap: 7px; }
+.desk-traffic-actions button { display: flex; align-items: center; gap: 5px; }
+.desk-traffic-status { display: grid; gap: 1px; padding: 8px 10px; font-size: 11px; flex-shrink: 0; }
+.desk-traffic-status span { color: var(--desk-muted); }
+.desk-traffic-embed { flex: 1; min-height: 280px; position: relative; }
+.desk-traffic-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.desk-traffic-foot { display: grid; gap: 7px; padding: 10px 12px; font-size: 11px; border-top: 1px solid var(--desk-edge); flex-shrink: 0; }
+.desk-traffic-foot > span { color: var(--desk-muted); line-height: 1.4; }
+.desk-traffic-foot p { margin: 0; }
+.desk-traffic-foot a { display: inline-flex; align-items: center; gap: 4px; }
+.desk-traffic-foot input, .desk-traffic-foot select { width: 100%; min-width: 0; padding: 7px; border: 1px solid var(--desk-edge); background: var(--desk-panel); color: var(--desk-text); }
+.desk-traffic-contact { display: grid; gap: 4px; padding: 8px; border: 1px solid var(--desk-edge); background: var(--desk-soft); }
+@container (max-width: 450px) {
+  .desk-tile-content .desk-orbital-panel .desk-map-caption { font-size: 10px; padding: 6px 10px; }
+  .desk-tile-content .desk-orbital-panel .desk-space-shortcuts > span:first-child { display: none; }
+  .desk-tile-content .orbital-toolbar { gap: 5px; padding: 6px 8px; }
+  .desk-tile-content .orbital-toolbar select { max-width: 150px; }
+  .desk-tile-content .orbital-note { font-size: 10px; margin: 5px 10px; }
+}
+
+.desk-traffic-controls label > span { flex: none; white-space: nowrap; }
+
+.desk-traffic-reload { display: inline-flex; align-items: center; gap: 5px; justify-self: start; }

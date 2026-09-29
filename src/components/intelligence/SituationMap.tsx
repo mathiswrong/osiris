@@ -9,6 +9,8 @@ import type { Development, SatellitePosition } from "@/lib/intelligence/types";
 import type { TrafficContact } from "@/lib/intelligence/traffic";
 interface Props {
   theme?: "day" | "night";
+  label?: string;
+  onViewportChange?: (center: { lat: number; lng: number }) => void;
   contacts?: TrafficContact[];
   contextSatellites?: SatellitePosition[];
   focus?: { lat: number; lng: number };
@@ -34,10 +36,13 @@ export default function SituationMap({
   contextSatellites = [],
   focus,
   radiusKm = 463,
+  label,
+  onViewportChange,
 }: Props) {
   const container = useRef<HTMLDivElement>(null),
     map = useRef<maplibregl.Map | null>(null),
-    select = useRef(onSelect);
+    select = useRef(onSelect),
+    viewportChange = useRef(onViewportChange);
   const [ready, setReady] = useState(0),
     [error, setError] = useState("");
   const [hover, setHover] = useState<{
@@ -49,7 +54,8 @@ export default function SituationMap({
   } | null>(null);
   useEffect(() => {
     select.current = onSelect;
-  }, [onSelect]);
+    viewportChange.current = onViewportChange;
+  }, [onSelect, onViewportChange]);
   useEffect(() => {
     if (!container.current) return;
     maplibregl.setWorkerUrl(
@@ -83,6 +89,10 @@ export default function SituationMap({
       new maplibregl.NavigationControl({ showCompass: false }),
       "top-right",
     );
+    m.on("moveend", () => {
+      const center = m.getCenter();
+      viewportChange.current?.({ lat: center.lat, lng: center.lng });
+    });
     m.on("load", () => {
       clearTimeout(timer);
       setError("");
@@ -416,9 +426,9 @@ export default function SituationMap({
         ref={container}
         className="desk-map"
         aria-label={
-          focus
+          label || (focus
             ? "Combined regional investigation map"
-            : "Global observation map"
+            : "Global observation map")
         }
       />
       {error && (

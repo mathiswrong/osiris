@@ -5,19 +5,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, Copy, Check, Link2, X, Globe, MapPin } from 'lucide-react';
 
 interface SharePanelProps {
-  mapView: { zoom: number; latitude: number; longitude?: number };
+  mapView: { zoom: number; latitude: number; longitude: number };
   activeLayers: Record<string, boolean>;
-  mouseCoords?: { lat: number; lng: number } | null;
 }
 
-export default function SharePanel({ mapView, activeLayers, mouseCoords }: SharePanelProps) {
+export default function SharePanel({ mapView, activeLayers }: SharePanelProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const generateShareUrl = useCallback(() => {
     const params = new URLSearchParams();
-    const lat = mouseCoords?.lat ?? mapView.latitude ?? 20;
-    const lng = mouseCoords?.lng ?? mapView.longitude ?? 0;
+    const lat = mapView.latitude;
+    const lng = mapView.longitude;
     params.set('lat', lat.toFixed(4));
     params.set('lon', lng.toFixed(4));
     params.set('zoom', mapView.zoom.toFixed(2));
@@ -27,11 +26,11 @@ export default function SharePanel({ mapView, activeLayers, mouseCoords }: Share
       .filter(([, v]) => v)
       .map(([k]) => k)
       .join(',');
-    if (layerKeys) params.set('layers', layerKeys);
+    params.set('layers', layerKeys);
 
     const base = typeof window !== 'undefined' ? window.location.origin : 'https://knuckletat.com';
-    return `${base}/?${params.toString()}`;
-  }, [mapView, activeLayers, mouseCoords]);
+    return `${base}/explore?${params.toString()}`;
+  }, [mapView, activeLayers]);
 
   const copyToClipboard = useCallback(async () => {
     const url = generateShareUrl();
@@ -88,7 +87,7 @@ export default function SharePanel({ mapView, activeLayers, mouseCoords }: Share
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Globe className="w-3.5 h-3.5 text-[var(--gold-primary)]" />
-                <span className="hud-text text-[11px] text-[var(--text-primary)]">SHARE VIEW</span>
+                <span className="hud-text text-[11px] text-[var(--text-primary)]">SHARE KNUCKLETAT MAP</span>
               </div>
               <button onClick={() => setIsOpen(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">
                 <X className="w-3 h-3" />
@@ -102,7 +101,7 @@ export default function SharePanel({ mapView, activeLayers, mouseCoords }: Share
                 <span className="text-[9px] font-mono text-[var(--text-muted)] tracking-widest">CURRENT VIEW</span>
               </div>
               <div className="text-[9px] font-mono text-[var(--text-secondary)]">
-                {mouseCoords ? `${mouseCoords.lat.toFixed(4)}°, ${mouseCoords.lng.toFixed(4)}°` : '—'} · Zoom {mapView.zoom.toFixed(1)}
+                {`${mapView.latitude.toFixed(4)}°, ${mapView.longitude.toFixed(4)}°`} · Zoom {mapView.zoom.toFixed(1)}
               </div>
               <div className="text-[9px] font-mono text-[var(--text-muted)] mt-1">
                 {Object.values(activeLayers).filter(Boolean).length} layers active

@@ -79,6 +79,9 @@ export default function SituationMap({
       return;
     }
     map.current = m;
+    // A reading page owns the wheel. The map's visible controls still zoom it.
+    if (container.current.closest(".desk-reading, .regional-page") && !container.current.closest(".desk-tile-full"))
+      m.scrollZoom.disable();
     const timer = setTimeout(() => {
       if (!m.isStyleLoaded())
         setError(

@@ -110,6 +110,7 @@ body:has(.intelligence-desk) {
   text-transform: uppercase;
   font-size: 11px;
 }
+.desk-regions-link { display: inline-flex; align-items: center; padding: 7px 10px; border: 1px solid var(--desk-edge); font-size: 11px; text-transform: uppercase; }
 .desk-nav-note {
   margin-left: auto;
   color: var(--desk-muted);

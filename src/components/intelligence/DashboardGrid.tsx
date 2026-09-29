@@ -27,6 +27,10 @@ export default function DashboardGrid({ children }: { children: ReactNode }) {
 }
 
 function Workspace({ tiles, width, cols }: { tiles: (TileProps & { group: string })[]; width: number; cols: number }) {
+  const [view, setView] = useState<"reading" | "wall">(() => {
+    try { return localStorage.getItem("knuckletat:workspace-view") === "wall" ? "wall" : "reading"; }
+    catch { return "reading"; }
+  });
   const [saved, setSaved] = useState(() => {
     try { return parseLayouts(localStorage.getItem(LAYOUT_KEY)); } catch { return {}; }
   });
@@ -34,7 +38,7 @@ function Workspace({ tiles, width, cols }: { tiles: (TileProps & { group: string
   const [full, setFull] = useState<string | null>(null);
   // A transient investigation can be closed from inside its expanded content.
   if (full && !tiles.some((tile) => tile.id === full)) setFull(null);
-  const [message, setMessage] = useState("Drag a tile’s grip · resize from its corner · expand for full screen");
+  const [message, setMessage] = useState("Read down the page; choose Wall to arrange compact tiles");
   const [interacting, setInteracting] = useState(false);
   const layout = tileLayout(tiles, cols, saved[cols]);
   function commit(next: Layout) {
@@ -101,7 +105,7 @@ function Workspace({ tiles, width, cols }: { tiles: (TileProps & { group: string
     if (id) window.setTimeout(() => document.getElementById(id)?.scrollIntoView(), 0);
   }, []);
   function keyboard(event: KeyboardEvent, id: string) {
-    if (locked || full || !["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) return;
+    if (view !== "wall" || locked || full || !["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) return;
     event.preventDefault();
     const item = layout.find((tile) => tile.i === id)!;
     const dx = event.key === "ArrowLeft" ? -1 : event.key === "ArrowRight" ? 1 : 0;
@@ -114,12 +118,26 @@ function Workspace({ tiles, width, cols }: { tiles: (TileProps & { group: string
       commit(moveElement(next, moving, Math.max(0, Math.min(cols - item.w, item.x + dx)), Math.max(0, item.y + dy), true, false, "vertical", cols));
     }
   }
+  // Reading mode follows the live desktop arrangement while letting each row grow with its content.
+  const readingOrder = new Map(layout.map((item) => [item.i, item.y * cols + item.x]));
+  const orderedTiles = view === "reading" ? [...tiles].sort((a, b) => (readingOrder.get(a.id) ?? Number.MAX_SAFE_INTEGER) - (readingOrder.get(b.id) ?? Number.MAX_SAFE_INTEGER)) : tiles;
+  const cards = orderedTiles.map((tile) => <div key={tile.id} id={tile.id} data-tile={tile.id} data-section={tile.group} className={`desk-tile ${tile.kind ? `desk-tile-${tile.kind}` : ""} ${full === tile.id ? "desk-tile-full" : ""}`}
+    role={full === tile.id ? "dialog" : "region"} aria-modal={full === tile.id || undefined} aria-label={tile.title}
+    onClickCapture={(event) => { const anchor = (event.target as Element).closest<HTMLAnchorElement>('a[href^="#"]'); const target = anchor && document.getElementById(anchor.hash.slice(1)); if (full && target && !event.currentTarget.contains(target)) { setFull(null); setTimeout(() => target.scrollIntoView({ behavior: "smooth" }), 0); } }}>
+    <div className="desk-tile-bar">
+      {view === "wall" ? <button className="desk-tile-grip" disabled={locked || !!full} aria-label={`Move ${tile.title}`} aria-describedby="tile-keyboard-help" title="Drag to move. Arrow keys move; Shift + arrows resize." onKeyDown={(event) => keyboard(event, tile.id)}><Grip size={16} /><span>{tile.title}</span></button> : <strong className="desk-tile-label">{tile.title}</strong>}
+      <button className="desk-tile-expand" aria-label={`${full === tile.id ? "Exit full screen" : "Full screen"}: ${tile.title}`} title={full === tile.id ? "Exit full screen (Esc)" : "Full screen"} onClick={() => setFull(full === tile.id ? null : tile.id)}>{full === tile.id ? <Minimize2 size={16} /> : <Maximize2 size={16} />}{full === tile.id && <span>Close · Esc</span>}</button>
+    </div>
+    <div className="desk-tile-content">{tile.children}</div>
+  </div>);
   return <div className={interacting ? "desk-grid-interacting" : ""}>
     <div className="desk-layout-toolbar">
       <div><strong><Grip size={16} /> Your intelligence workspace</strong><span role="status">{message}</span></div>
       <div className="desk-layout-actions">
-        <button aria-pressed={locked} onClick={() => setLocked(!locked)}>{locked ? <LockKeyhole size={14} /> : <UnlockKeyhole size={14} />}{locked ? "Unlock layout" : "Lock layout"}</button>
-        <button onClick={() => { const next = { ...saved }; delete next[cols]; setSaved(next); try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(next)); setMessage("Default layout restored for this screen size"); } catch { setMessage("Default layout restored for this visit"); } }}><RotateCcw size={14} /> Reset layout</button>
+        <button aria-pressed={view === "reading"} onClick={() => { setView("reading"); setFull(null); setMessage("Read down the page"); try { localStorage.setItem("knuckletat:workspace-view", "reading"); } catch {} }}>Reading</button>
+        <button aria-pressed={view === "wall"} onClick={() => { setView("wall"); setFull(null); setMessage("Drag a tile’s grip · resize from its corner · expand for full screen"); try { localStorage.setItem("knuckletat:workspace-view", "wall"); } catch {} }}>Wall</button>
+        {view === "wall" && <><button aria-pressed={locked} onClick={() => setLocked(!locked)}>{locked ? <LockKeyhole size={14} /> : <UnlockKeyhole size={14} />}{locked ? "Unlock layout" : "Lock layout"}</button>
+        <button onClick={() => { const next = { ...saved }; delete next[cols]; setSaved(next); try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(next)); setMessage("Default layout restored for this screen size"); } catch { setMessage("Default layout restored for this visit"); } }}><RotateCcw size={14} /> Reset layout</button></>}
       </div>
     </div>
     <nav className="desk-workspace-path" aria-label="Dashboard sections">
@@ -133,18 +151,10 @@ function Workspace({ tiles, width, cols }: { tiles: (TileProps & { group: string
       ].map(({ id, title, detail, Icon }) => <button key={id} onClick={() => revealDashboardTile(id)}><Icon size={15} /><span>{title}<small>{detail}</small></span></button>)}
     </nav>
     <p className="desk-sr-only" id="tile-keyboard-help">Use arrow keys on a tile grip to move it. Hold Shift and use arrow keys to resize. Escape closes full screen.</p>
-    <GridLayout width={width} layout={layout} gridConfig={{ cols, rowHeight: 22, margin: [10, 10], containerPadding: [0, 0] }}
+    {view === "reading" ? <div className="desk-reading">{cards}</div> : <GridLayout width={width} layout={layout} gridConfig={{ cols, rowHeight: 22, margin: [10, 10], containerPadding: [0, 0] }}
       dragConfig={{ enabled: !locked && !full, handle: ".desk-tile-grip" }} resizeConfig={{ enabled: !locked && !full, handles: ["se"] }}
       onDragStart={() => setInteracting(true)} onResizeStart={() => setInteracting(true)} onDragStop={commit} onResizeStop={commit}>
-      {tiles.map((tile) => <div key={tile.id} id={tile.id} data-tile={tile.id} data-section={tile.group} className={`desk-tile ${tile.kind ? `desk-tile-${tile.kind}` : ""} ${full === tile.id ? "desk-tile-full" : ""}`}
-        role={full === tile.id ? "dialog" : "region"} aria-modal={full === tile.id || undefined} aria-label={tile.title}
-        onClickCapture={(event) => { const anchor = (event.target as Element).closest<HTMLAnchorElement>('a[href^="#"]'); const target = anchor && document.getElementById(anchor.hash.slice(1)); if (full && target && !event.currentTarget.contains(target)) { setFull(null); setTimeout(() => target.scrollIntoView({ behavior: "smooth" }), 0); } }}>
-        <div className="desk-tile-bar">
-          <button className="desk-tile-grip" disabled={locked || !!full} aria-label={`Move ${tile.title}`} aria-describedby="tile-keyboard-help" title="Drag to move. Arrow keys move; Shift + arrows resize." onKeyDown={(event) => keyboard(event, tile.id)}><Grip size={16} /><span>{tile.title}</span></button>
-          <button className="desk-tile-expand" aria-label={`${full === tile.id ? "Exit full screen" : "Full screen"}: ${tile.title}`} title={full === tile.id ? "Exit full screen (Esc)" : "Full screen"} onClick={() => setFull(full === tile.id ? null : tile.id)}>{full === tile.id ? <Minimize2 size={16} /> : <Maximize2 size={16} />}{full === tile.id && <span>Close · Esc</span>}</button>
-        </div>
-        <div className="desk-tile-content">{tile.children}</div>
-      </div>)}
-    </GridLayout>
+      {cards}
+    </GridLayout>}
   </div>;
 }

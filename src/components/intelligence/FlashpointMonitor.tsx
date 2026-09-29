@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Flame } from "lucide-react";
+import Link from "next/link";
+import { regionId } from "@/lib/intelligence/regional-hubs";
 import type {
   Flashpoint,
   FlashpointResult,
@@ -158,6 +160,8 @@ export function FlashpointDetail({
       <h2>
         {item.region} · {item.topic}
       </h2>
+      {item.region !== "Measured earthquake" && item.region !== "Location unresolved" &&
+        <Link href={`/regions/${regionId(item.region)}`}>Open {item.region} regional hub ↗</Link>}
       <h3>Why this needs attention</h3>
       <ul className="desk-evidence-list">
         {item.reasons.map((r) => (

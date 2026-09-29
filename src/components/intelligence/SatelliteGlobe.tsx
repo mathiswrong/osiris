@@ -99,12 +99,14 @@ export default function SatelliteGlobe({
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.domElement.setAttribute(
       "aria-label",
-      "Interactive satellite globe. Drag to orbit, scroll to zoom. Use the catalogue below for keyboard selection.",
+      "Interactive satellite globe. Drag to orbit; use the zoom buttons to change scale. Use the catalogue below for keyboard selection.",
     );
     el.appendChild(renderer.domElement);
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.enablePan = false;
+    // Keep the document scrollable when the pointer is over the globe.
+    controls.enableZoom = false;
     controls.minDistance = 1.12;
     controls.maxDistance = 80;
     controls.autoRotateSpeed = 0.22;
@@ -640,7 +642,7 @@ export default function SatelliteGlobe({
           </div>
         )}
         <div className="orbital-hint">
-          Drag to orbit · Scroll to zoom · Hover to identify · Click for mission
+          Drag to orbit · Use zoom buttons · Hover to identify · Click for mission
           & clients
         </div>
       </div>

@@ -89,7 +89,7 @@ export default function IntelligenceDesk() {
     [satelliteId, setSatelliteId] = useState<string | null>(null),
     [filter, setFilter] = useState("all"),
     [query, setQuery] = useState(""),
-    [recordLimit, setRecordLimit] = useState(100),
+    [recordLimit, setRecordLimit] = useState(25),
     [tab, setTab] = useState<"brief" | "evidence">("brief");
   const [now, setNow] = useState(0),
     [lastVisit, setLastVisit] = useState<number | null>(null),
@@ -100,6 +100,9 @@ export default function IntelligenceDesk() {
     [refresh, setRefresh] = useState(0),
     [busy, setBusy] = useState(false);
   const [theme, setTheme] = useState<"day" | "night">("day");
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("view") === "sources") setMode("sources");
+  }, []);
   const [investigation, setInvestigation] = useState<string | null>(null);
   const [satelliteActive, setSatelliteActive] = useState(false);
   const activateSatellite = useCallback(() => setSatelliteActive(true), []);
@@ -298,7 +301,7 @@ export default function IntelligenceDesk() {
   };
   const switchMode = (next: Mode) => {
     setMode(next);
-    setRecordLimit(100);
+    setRecordLimit(25);
     setQuery("");
   };
   const selectedHealth = selectedItem
@@ -332,8 +335,10 @@ export default function IntelligenceDesk() {
         <Link href="/explore">
           Map explorer <ArrowUpRight size={13} />
         </Link>
+        <Link href="/regions">Regions <ArrowUpRight size={13} /></Link>
       </header>
       <nav className="desk-navigation" aria-label="Workspace">
+        <Link href="/regions" className="desk-regions-link">Regional hubs ↗</Link>
         <button
           aria-pressed={mode === "global"}
           onClick={() => switchMode("global")}
@@ -536,7 +541,7 @@ export default function IntelligenceDesk() {
                         onChange={(e) => {
                           setQuery(e.target.value);
                           setSatelliteId(null);
-                          setRecordLimit(100);
+                          setRecordLimit(25);
                         }}
                       />
                     </label>
@@ -546,7 +551,7 @@ export default function IntelligenceDesk() {
                       onChange={(e) => {
                         setPurpose(e.target.value);
                         setSatelliteId(null);
-                        setRecordLimit(100);
+                        setRecordLimit(25);
                       }}
                     >
                       {[
@@ -576,7 +581,7 @@ export default function IntelligenceDesk() {
                           setQuery("");
                           setPurpose("all");
                           setSatelliteId(s.id);
-                          setRecordLimit(100);
+                          setRecordLimit(25);
                         }}
                       >
                         {s.name}
@@ -789,7 +794,7 @@ export default function IntelligenceDesk() {
                       value={query}
                       onChange={(e) => {
                         setQuery(e.target.value);
-                        setRecordLimit(100);
+                        setRecordLimit(25);
                       }}
                     />
                   </label>
@@ -924,8 +929,8 @@ export default function IntelligenceDesk() {
                   <div className="desk-empty">
                     Showing {recordLimit} of{" "}
                     {space ? satMatches.length : visible.length} records.{" "}
-                    <button onClick={() => setRecordLimit((n) => n + 100)}>
-                      Show next 100
+                    <button onClick={() => setRecordLimit((n) => n + 25)}>
+                      Show next 25
                     </button>
                   </div>
                 )}

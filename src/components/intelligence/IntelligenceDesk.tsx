@@ -12,7 +12,6 @@ import {
   RefreshCw,
   Sun,
   Moon,
-  Radio,
 } from "lucide-react";
 import {
   SOURCE_DEFINITIONS,
@@ -340,26 +339,7 @@ export default function IntelligenceDesk() {
           onClick={() => switchMode("global")}
         >
           <Globe2 size={14} />
-          Global
-        </button>
-        <button aria-label="Jump to maps on this page" onClick={() => {
-          switchMode("global");
-          window.setTimeout(() => revealDashboardTile("situation"), 0);
-        }}><Globe2 size={14} /> Maps ↓</button>
-        <button aria-label="Jump to Satellites on this page" onClick={() => {
-          switchMode("global");
-          setSatelliteActive(true);
-          window.setTimeout(() => revealDashboardTile("satellites"), 0);
-        }}>
-          <Satellite size={14} />
-          Satellites ↓
-        </button>
-        <button aria-label="Jump to Signals on this page" onClick={() => {
-          switchMode("global");
-          window.setTimeout(() => revealDashboardTile("signals"), 0);
-        }}>
-          <Radio size={14} />
-          Signals ↓
+          Dashboard
         </button>
         <button
           aria-pressed={mode === "sources"}
@@ -909,7 +889,7 @@ export default function IntelligenceDesk() {
                           className="desk-record"
                           key={i.id}
                           aria-pressed={selected === i.id}
-                          onClick={() => setSelected(i.id)}
+                          onClick={() => { setSelected(i.id); revealDashboardTile("desk-details"); }}
                         >
                           <span className="desk-record-top">
                             <span>

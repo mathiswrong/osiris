@@ -2,6 +2,38 @@ import { verticalCompactor, type Layout, type LayoutItem } from "react-grid-layo
 
 export const LAYOUT_KEY = "knuckletat:bricks:v1";
 export type TileDefinition = { id: string; w: number; h: number };
+// A complete row at each breakpoint keeps related tools next to one another.
+const DEFAULT_TILES: Record<string, { w: number; h: number; tabletW?: number; group: string }> = {
+  flashpoints: { w: 6, h: 12, group: "overview" },
+  "signal-watch": { w: 3, h: 12, group: "overview" },
+  developments: { w: 3, h: 12, group: "overview" },
+  situation: { w: 3, h: 20, group: "maps" },
+  satellites: { w: 3, h: 20, group: "maps" },
+  "air-traffic": { w: 3, h: 20, group: "maps" },
+  "maritime-traffic": { w: 3, h: 20, group: "maps" },
+  "video-": { w: 3, h: 10, group: "broadcasts" },
+  signals: { w: 4, h: 17, tabletW: 6, group: "signals" },
+  activity: { w: 4, h: 17, tabletW: 3, group: "signals" },
+  telegram: { w: 4, h: 17, tabletW: 3, group: "signals" },
+  "desk-details": { w: 6, h: 10, group: "evidence" },
+  context: { w: 6, h: 10, group: "evidence" },
+  catalogue: { w: 6, h: 18, tabletW: 6, group: "orbital" },
+  mission: { w: 6, h: 9, tabletW: 6, group: "orbital" },
+  "satellite-dossier": { w: 6, h: 9, tabletW: 6, group: "orbital" },
+  channels: { w: 4, h: 15, tabletW: 6, group: "sources" },
+  social: { w: 4, h: 15, tabletW: 3, group: "sources" },
+  lookup: { w: 4, h: 15, tabletW: 3, group: "sources" },
+  "investigation-tile": { w: 12, h: 24, group: "evidence" },
+};
+export function recommendedTiles<T extends TileDefinition>(tiles: T[], cols: number) {
+  const keys = Object.keys(DEFAULT_TILES);
+  const key = (id: string) => id.startsWith("video-") ? "video-" : id;
+  const rank = (id: string) => { const index = keys.indexOf(key(id)); return index < 0 ? keys.length : index; };
+  return tiles.map((tile) => {
+    const preset = DEFAULT_TILES[key(tile.id)];
+    return preset ? { ...tile, w: Math.min(cols, cols === 6 ? preset.tabletW ?? preset.w : preset.w), h: preset.h, group: preset.group } : { ...tile, group: "tools" };
+  }).sort((a, b) => rank(a.id) - rank(b.id));
+}
 export type SavedLayouts = Record<string, Layout>;
 const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, Math.round(n)));
 

@@ -114,3 +114,18 @@
 .desk-traffic-controls label > span { flex: none; white-space: nowrap; }
 
 .desk-traffic-reload { display: inline-flex; align-items: center; gap: 5px; justify-self: start; }
+
+/* A small workspace index explains the capabilities without splitting the movable canvas. */
+.desk-workspace-path { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 0 0 14px; }
+.intelligence-desk .desk-workspace-path button { display: flex; align-items: center; gap: 9px; padding: 9px 12px; border-radius: 6px; text-align: left; background: var(--desk-panel); }
+.desk-workspace-path button > svg { flex: none; color: var(--desk-accent); }
+.desk-workspace-path button > span { font-size: 12px; font-weight: 700; }
+.desk-workspace-path small { display: block; color: var(--desk-muted); font-size: 10px; font-weight: 400; }
+.desk-tile[data-section="maps"] .desk-tile-bar { box-shadow: inset 0 2px var(--desk-accent); }
+.desk-tile[data-section="broadcasts"] .desk-tile-bar { box-shadow: inset 0 2px var(--desk-muted); }
+.desk-tile[data-section="overview"] .desk-records .desk-record { padding-top: 9px; padding-bottom: 9px; }
+@media (max-width: 900px) { .desk-workspace-path { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 450px) {
+  .intelligence-desk .desk-workspace-path button { gap: 6px; padding: 8px; }
+  .desk-workspace-path small { font-size: 9px; }
+}

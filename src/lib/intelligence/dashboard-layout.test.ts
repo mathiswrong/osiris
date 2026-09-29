@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseLayouts, tileLayout } from "./dashboard-layout";
+import { parseLayouts, tileLayout, recommendedTiles } from "./dashboard-layout";
 const tiles = [ { id: "map", w: 6, h: 18 }, { id: "feed", w: 3, h: 12 }, { id: "video", w: 3, h: 12 } ];
 function overlaps(layout: ReturnType<typeof tileLayout>) {
   return layout.some((a, i) => layout.slice(i + 1).some((b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y));
@@ -32,11 +32,17 @@ describe("dashboard layouts", () => {
   });
 });
 
-it("packs the four map tiles into one complete default desktop row", () => {
-  const layout = tileLayout([
-    { id: "flashpoints", w: 6, h: 16 }, { id: "signal-watch", w: 3, h: 16 }, { id: "telegram", w: 3, h: 16 },
-    ...["situation", "satellites", "air-traffic", "maritime-traffic"].map((id) => ({ id, w: 3, h: 22 })),
-  ], 12);
-  expect(layout.slice(3).map((tile) => [tile.x, tile.y, tile.w, tile.h])).toEqual([[0, 16, 3, 22], [3, 16, 3, 22], [6, 16, 3, 22], [9, 16, 3, 22]]);
+it.each([12, 6, 1])("keeps capability groups together without gaps at %s columns", (cols) => {
+  const ids = ["flashpoints", "signal-watch", "developments", "situation", "satellites", "air-traffic", "maritime-traffic", "video-dw", "video-france24", "video-aljazeera", "video-sky", "signals", "activity", "telegram", "desk-details", "context", "catalogue", "mission", "satellite-dossier", "channels", "social", "lookup"];
+  const defaults = recommendedTiles(ids.map((id) => ({ id, w: 3, h: 10 })), cols);
+  const layout = tileLayout(defaults, cols);
   expect(overlaps(layout)).toBe(false);
+  expect(layout.every((tile) => tile.x >= 0 && tile.x + tile.w <= cols)).toBe(true);
+  for (let row = 0; row < Math.max(...layout.map((tile) => tile.y + tile.h)); row++) {
+    expect(layout.filter((tile) => tile.y <= row && tile.y + tile.h > row).reduce((sum, tile) => sum + tile.w, 0)).toBe(cols);
+  }
+  const maps = layout.filter((tile) => defaults.find((item) => item.id === tile.i)?.group === "maps");
+  if (cols === 12) expect(maps.map((tile) => [tile.x, tile.y, tile.w])).toEqual([[0, 12, 3], [3, 12, 3], [6, 12, 3], [9, 12, 3]]);
+  const video = layout.find((tile) => tile.i === "video-dw")!;
+  expect(video.y).toBe(Math.max(...maps.map((tile) => tile.y + tile.h)));
 });

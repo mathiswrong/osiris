@@ -2,8 +2,8 @@
 import { Children, isValidElement, useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
 import { GridLayout, useContainerWidth } from "react-grid-layout";
 import { moveElement, verticalCompactor, type Layout } from "react-grid-layout/core";
-import { Grip, Maximize2, Minimize2, RotateCcw, LockKeyhole, UnlockKeyhole } from "lucide-react";
-import { LAYOUT_KEY, parseLayouts, tileLayout, type TileDefinition } from "@/lib/intelligence/dashboard-layout";
+import { Grip, Maximize2, Minimize2, RotateCcw, LockKeyhole, UnlockKeyhole, Globe2, Radio, Tv, Search, Satellite, Layers } from "lucide-react";
+import { LAYOUT_KEY, parseLayouts, tileLayout, recommendedTiles, type TileDefinition } from "@/lib/intelligence/dashboard-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import "./dashboard-grid.css";
@@ -17,18 +17,16 @@ export function revealDashboardTile(id: string) {
   pendingReveal = id;
   window.dispatchEvent(new Event("knuckletat:reveal-tile"));
 }
-const order = ["flashpoints", "signal-watch", "telegram", "situation", "satellites", "air-traffic", "maritime-traffic", "video-", "developments", "desk-details", "signals", "activity", "channels", "mission", "catalogue", "satellite-dossier", "context", "social", "lookup", "investigation-tile"];
-const rank = (id: string) => order.findIndex((key) => id === key || (key === "video-" && id.startsWith(key)));
-
 export default function DashboardGrid({ children }: { children: ReactNode }) {
   const { width, mounted, containerRef } = useContainerWidth({ measureBeforeMount: true });
-  const tiles = Children.toArray(children).filter(isValidElement<TileProps>).map((child) => child.props).sort((a, b) => rank(a.id) - rank(b.id));
+  const cols = width >= 1100 ? 12 : width >= 700 ? 6 : 1;
+  const tiles = recommendedTiles(Children.toArray(children).filter(isValidElement<TileProps>).map((child) => child.props), cols);
   return <div className="desk-bricks" ref={containerRef}>
-    {mounted ? <Workspace tiles={tiles} width={width} cols={width >= 1100 ? 12 : width >= 700 ? 6 : 1} /> : <div className="desk-empty">Preparing your workspace…</div>}
+    {mounted ? <Workspace tiles={tiles} width={width} cols={cols} /> : <div className="desk-empty">Preparing your workspace…</div>}
   </div>;
 }
 
-function Workspace({ tiles, width, cols }: { tiles: TileProps[]; width: number; cols: number }) {
+function Workspace({ tiles, width, cols }: { tiles: (TileProps & { group: string })[]; width: number; cols: number }) {
   const [saved, setSaved] = useState(() => {
     try { return parseLayouts(localStorage.getItem(LAYOUT_KEY)); } catch { return {}; }
   });
@@ -118,17 +116,27 @@ function Workspace({ tiles, width, cols }: { tiles: TileProps[]; width: number; 
   }
   return <div className={interacting ? "desk-grid-interacting" : ""}>
     <div className="desk-layout-toolbar">
-      <div><strong><Grip size={16} /> Your workspace</strong><span role="status">{message}</span></div>
+      <div><strong><Grip size={16} /> Your intelligence workspace</strong><span role="status">{message}</span></div>
       <div className="desk-layout-actions">
         <button aria-pressed={locked} onClick={() => setLocked(!locked)}>{locked ? <LockKeyhole size={14} /> : <UnlockKeyhole size={14} />}{locked ? "Unlock layout" : "Lock layout"}</button>
         <button onClick={() => { const next = { ...saved }; delete next[cols]; setSaved(next); try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(next)); setMessage("Default layout restored for this screen size"); } catch { setMessage("Default layout restored for this visit"); } }}><RotateCcw size={14} /> Reset layout</button>
       </div>
     </div>
+    <nav className="desk-workspace-path" aria-label="Dashboard sections">
+      {[
+        { id: "situation", title: "Maps", detail: "4 views", Icon: Globe2 },
+        { id: "video-dw", title: "Live TV", detail: "4 channels", Icon: Tv },
+        { id: "signals", title: "Signals", detail: "spot activity", Icon: Radio },
+        { id: "desk-details", title: "Evidence", detail: "follow a lead", Icon: Search },
+        { id: "catalogue", title: "Satellites", detail: "inspect missions", Icon: Satellite },
+        { id: "channels", title: "Sources", detail: "verify & search", Icon: Layers },
+      ].map(({ id, title, detail, Icon }) => <button key={id} onClick={() => revealDashboardTile(id)}><Icon size={15} /><span>{title}<small>{detail}</small></span></button>)}
+    </nav>
     <p className="desk-sr-only" id="tile-keyboard-help">Use arrow keys on a tile grip to move it. Hold Shift and use arrow keys to resize. Escape closes full screen.</p>
     <GridLayout width={width} layout={layout} gridConfig={{ cols, rowHeight: 22, margin: [10, 10], containerPadding: [0, 0] }}
       dragConfig={{ enabled: !locked && !full, handle: ".desk-tile-grip" }} resizeConfig={{ enabled: !locked && !full, handles: ["se"] }}
       onDragStart={() => setInteracting(true)} onResizeStart={() => setInteracting(true)} onDragStop={commit} onResizeStop={commit}>
-      {tiles.map((tile) => <div key={tile.id} id={tile.id} data-tile={tile.id} className={`desk-tile ${tile.kind ? `desk-tile-${tile.kind}` : ""} ${full === tile.id ? "desk-tile-full" : ""}`}
+      {tiles.map((tile) => <div key={tile.id} id={tile.id} data-tile={tile.id} data-section={tile.group} className={`desk-tile ${tile.kind ? `desk-tile-${tile.kind}` : ""} ${full === tile.id ? "desk-tile-full" : ""}`}
         role={full === tile.id ? "dialog" : "region"} aria-modal={full === tile.id || undefined} aria-label={tile.title}
         onClickCapture={(event) => { const anchor = (event.target as Element).closest<HTMLAnchorElement>('a[href^="#"]'); const target = anchor && document.getElementById(anchor.hash.slice(1)); if (full && target && !event.currentTarget.contains(target)) { setFull(null); setTimeout(() => target.scrollIntoView({ behavior: "smooth" }), 0); } }}>
         <div className="desk-tile-bar">

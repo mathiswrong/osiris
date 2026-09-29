@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { Satellite, Search } from "lucide-react";
 import { missionFor } from "@/lib/intelligence/profiles";
 import type { SatelliteResult } from "@/lib/intelligence/types";
-import { DashboardTile } from "./DashboardGrid";
+import { DashboardTile, revealDashboardTile } from "./DashboardGrid";
 import SatelliteDossier from "./SatelliteDossier";
 import { HoverPreview } from "./HoverPreview";
 
@@ -63,7 +63,7 @@ export function useSatelliteTiles({ satellites, selectedId, onSelect, active, on
           </div>
         </div>
         {active ? <SatelliteGlobe contextOrbits={satellites?.contextOrbits || []} satellites={matches} selected={selected || null} orbit={satellites?.selectedId === selectedId ? satellites.orbit || [] : []} onSelect={(id) => select(id)} /> : <div className="desk-map-loading">Orbital view loads when you reach this section…</div>}
-        <div className="desk-map-caption desk-map-bottom"><span>SGP4 orbital predictions · CelesTrak GP/OMM</span><span>{satellites?.health.state || "Connecting CelesTrak"}</span></div>
+        <div className="desk-map-caption desk-map-bottom"><span>{selected ? <button onClick={() => revealDashboardTile("mission")}>Inspect {selected.name} ↗</button> : "SGP4 orbital predictions · CelesTrak GP/OMM"}</span><span>{satellites?.health.state || "Connecting CelesTrak"}</span></div>
       </section>
     </DashboardTile>, <DashboardTile key="mission" id="mission" title="Mission inspector" w={3} h={21}>
       <aside className="desk-panel desk-context">
@@ -89,7 +89,7 @@ export function useSatelliteTiles({ satellites, selectedId, onSelect, active, on
         <div className="desk-panel-title"><h2>Find a satellite</h2><span>{matches.length} MATCHES</span></div>
         <div className="desk-records">
           {matches.slice(0, limit).map((satellite) => <HoverPreview key={satellite.id} title={satellite.name} lines={[missionFor(satellite)?.summary || "Mission not yet documented", missionFor(satellite)?.operator || "Operator not established", `${satellite.altKm.toFixed(0)} km · elements ${satellite.elementAgeHours.toFixed(1)}h old`]}>
-            <button className="desk-record" aria-pressed={selectedId === satellite.id} onClick={() => select(satellite.id)}>
+            <button className="desk-record" aria-pressed={selectedId === satellite.id} onClick={() => { select(satellite.id); revealDashboardTile("mission"); }}>
               <span className="desk-record-top"><span>CelesTrak · {satellite.id}</span><span>{satellite.altKm.toFixed(0)} km</span></span>
               <strong>{satellite.name} <span className="desk-purpose-tag">{missionFor(satellite)?.purpose || "Not documented"}</span></strong>
               <small>Elements {satellite.elementAgeHours.toFixed(1)}h old · predicted {date(satellite.predictedAt)}</small>

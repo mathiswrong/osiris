@@ -9,6 +9,7 @@ import "react-resizable/css/styles.css";
 import "./dashboard-grid.css";
 
 type TileProps = TileDefinition & { title: string; kind?: "map" | "video"; children: ReactNode };
+const VIEW_KEY = "knuckletat:workspace-view:v2";
 // Descriptors keep the content and its owning hooks together. The grid supplies the tile chrome.
 export function DashboardTile({ children }: TileProps) { return children; }
 
@@ -28,8 +29,8 @@ export default function DashboardGrid({ children }: { children: ReactNode }) {
 
 function Workspace({ tiles, width, cols }: { tiles: (TileProps & { group: string })[]; width: number; cols: number }) {
   const [view, setView] = useState<"reading" | "wall">(() => {
-    try { return localStorage.getItem("knuckletat:workspace-view") === "wall" ? "wall" : "reading"; }
-    catch { return "reading"; }
+    try { return localStorage.getItem(VIEW_KEY) === "reading" ? "reading" : "wall"; }
+    catch { return "wall"; }
   });
   const [saved, setSaved] = useState(() => {
     try { return parseLayouts(localStorage.getItem(LAYOUT_KEY)); } catch { return {}; }
@@ -38,7 +39,9 @@ function Workspace({ tiles, width, cols }: { tiles: (TileProps & { group: string
   const [full, setFull] = useState<string | null>(null);
   // A transient investigation can be closed from inside its expanded content.
   if (full && !tiles.some((tile) => tile.id === full)) setFull(null);
-  const [message, setMessage] = useState("Read down the page; choose Wall to arrange compact tiles");
+  const [message, setMessage] = useState(view === "wall"
+    ? "Drag a tile’s grip · resize from its corner · expand for full screen"
+    : "Read down the page; choose Wall to arrange compact tiles");
   const [interacting, setInteracting] = useState(false);
   const layout = tileLayout(tiles, cols, saved[cols]);
   function commit(next: Layout) {
@@ -134,8 +137,8 @@ function Workspace({ tiles, width, cols }: { tiles: (TileProps & { group: string
     <div className="desk-layout-toolbar">
       <div><strong><Grip size={16} /> Your intelligence workspace</strong><span role="status">{message}</span></div>
       <div className="desk-layout-actions">
-        <button aria-pressed={view === "reading"} onClick={() => { setView("reading"); setFull(null); setMessage("Read down the page"); try { localStorage.setItem("knuckletat:workspace-view", "reading"); } catch {} }}>Reading</button>
-        <button aria-pressed={view === "wall"} onClick={() => { setView("wall"); setFull(null); setMessage("Drag a tile’s grip · resize from its corner · expand for full screen"); try { localStorage.setItem("knuckletat:workspace-view", "wall"); } catch {} }}>Wall</button>
+        <button aria-pressed={view === "reading"} onClick={() => { setView("reading"); setFull(null); setMessage("Read down the page"); try { localStorage.setItem(VIEW_KEY, "reading"); } catch {} }}>Reading</button>
+        <button aria-pressed={view === "wall"} onClick={() => { setView("wall"); setFull(null); setMessage("Drag a tile’s grip · resize from its corner · expand for full screen"); try { localStorage.setItem(VIEW_KEY, "wall"); } catch {} }}>Wall</button>
         {view === "wall" && <><button aria-pressed={locked} onClick={() => setLocked(!locked)}>{locked ? <LockKeyhole size={14} /> : <UnlockKeyhole size={14} />}{locked ? "Unlock layout" : "Lock layout"}</button>
         <button onClick={() => { const next = { ...saved }; delete next[cols]; setSaved(next); try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(next)); setMessage("Default layout restored for this screen size"); } catch { setMessage("Default layout restored for this visit"); } }}><RotateCcw size={14} /> Reset layout</button></>}
       </div>

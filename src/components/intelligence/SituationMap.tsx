@@ -19,6 +19,7 @@ interface Props {
   flashpoints: Flashpoint[];
   satellites: SatellitePosition[];
   selected: string | null;
+  highlighted?: string[];
   track: [number, number][][];
   onSelect: (id: string) => void;
   space: boolean;
@@ -28,6 +29,7 @@ export default function SituationMap({
   flashpoints,
   satellites,
   selected,
+  highlighted = [],
   track,
   onSelect,
   space,
@@ -299,7 +301,7 @@ export default function SituationMap({
             properties: {
               id: f.id,
               kind: "flashpoint",
-              selected: f.id === selected,
+              selected: f.id === selected || highlighted.includes(f.id),
               title: `${f.region} · ${f.topic}`,
               description: f.reasons[0],
               context: `${f.state} · ${f.location.precision}`,
@@ -351,6 +353,7 @@ export default function SituationMap({
     flashpoints,
     satellites,
     selected,
+    highlighted,
     ready,
     track,
     space,

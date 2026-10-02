@@ -22,6 +22,7 @@ import {
 } from "@/lib/intelligence/types";
 import { rankDevelopments } from "@/lib/intelligence/normalize";
 import { missionFor } from "@/lib/intelligence/profiles";
+import { buildRegionalHubs } from "@/lib/intelligence/regional-hubs";
 import type { FlashpointResult } from "@/lib/intelligence/flashpoints";
 import BroadcastPanel from "./BroadcastPanel";
 import TrafficPanel from "./TrafficPanel";
@@ -32,6 +33,7 @@ import { useSatelliteTiles } from "./SatelliteSection";
 import { FlashpointMonitor, FlashpointDetail } from "./FlashpointMonitor";
 import { HoverPreview } from "./HoverPreview";
 import InvestigationWorkspace from "./InvestigationWorkspace";
+import RegionalHubPills, { MyDeskLink } from "./RegionalHubPills";
 import { useSignalTiles, SignalPulse, useSignalsFeed } from "./SignalsWorkspace";
 import "./desk.css";
 const SatelliteGlobe = dynamic(() => import("./SatelliteGlobe"), {
@@ -101,7 +103,11 @@ export default function IntelligenceDesk() {
     [busy, setBusy] = useState(false);
   const [theme, setTheme] = useState<"day" | "night">("day");
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("view") === "sources") setMode("sources");
+    const view = new URLSearchParams(window.location.search).get("view");
+    if (view === "sources" || view === "space") {
+      setMode(view);
+      if (view === "space") setSatelliteActive(true);
+    }
   }, []);
   const [investigation, setInvestigation] = useState<string | null>(null);
   const [satelliteActive, setSatelliteActive] = useState(false);
@@ -235,6 +241,10 @@ export default function IntelligenceDesk() {
     () => rankDevelopments(Object.values(results).flatMap((r) => r.data)),
     [results],
   );
+  const regionalHubs = useMemo(
+    () => flashpoints ? buildRegionalHubs(flashpoints) : [],
+    [flashpoints],
+  );
   const visible = useMemo(
     () =>
       items.filter(
@@ -301,6 +311,7 @@ export default function IntelligenceDesk() {
   };
   const switchMode = (next: Mode) => {
     setMode(next);
+    if (next === "space") setSatelliteActive(true);
     setRecordLimit(25);
     setQuery("");
   };
@@ -335,23 +346,26 @@ export default function IntelligenceDesk() {
         <Link href="/explore">
           Map explorer <ArrowUpRight size={13} />
         </Link>
-        <Link href="/regions">Regions <ArrowUpRight size={13} /></Link>
       </header>
       <nav className="desk-navigation" aria-label="Workspace">
-        <Link href="/regions" className="desk-regions-link">Regional hubs ↗</Link>
         <button
           aria-pressed={mode === "global"}
           onClick={() => switchMode("global")}
         >
           <Globe2 size={14} />
-          Dashboard
+          Global
+        </button>
+        <MyDeskLink hubs={regionalHubs} />
+        <button aria-pressed={mode === "space"} onClick={() => switchMode("space")}>
+          <Satellite size={14} />
+          Satellites
         </button>
         <button
           aria-pressed={mode === "sources"}
           onClick={() => switchMode("sources")}
         >
           <Activity size={14} />
-          Source health{" "}
+          Sources{" "}
           {issues.length > 0 && (
             <span className="desk-count">{issues.length}</span>
           )}
@@ -368,6 +382,7 @@ export default function IntelligenceDesk() {
           {busy ? "Updating" : "Refresh"}
         </button>
       </nav>
+      <RegionalHubPills hubs={regionalHubs} />
       <div className="desk-healthstrip">
         <span className="desk-green">
           {health.filter((h) => h.state === "healthy").length} sources

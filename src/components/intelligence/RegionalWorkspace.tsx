@@ -2,10 +2,14 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import type { FlashpointResult } from "@/lib/intelligence/flashpoints";
 import type { SourceResult } from "@/lib/intelligence/types";
-import { buildRegionalHubs, countryCatalog, emptyCountryHub, regionalBrief, type RegionalEvent } from "@/lib/intelligence/regional-hubs";
+import { buildRegionalHubs, regionCatalog, emptyRegionalHub, regionId, regionalBrief, type RegionalEvent } from "@/lib/intelligence/regional-hubs";
 import { distanceKm } from "@/lib/intelligence/traffic";
+import RegionalHubPills, { FollowRegionButton } from "./RegionalHubPills";
+import RegionalDeskStream from "./RegionalDeskStream";
+import RegionalSatellites from "./RegionalSatellites";
 import "./desk.css";
 import "./regional.css";
 const RegionalMap = dynamic(() => import("./SituationMap"), { ssr: false, loading: () => <div className="desk-map-loading">Preparing regional map…</div> });
@@ -34,9 +38,11 @@ function storedSplits(): string[] {
 }
 
 export default function RegionalWorkspace({ selectedId }: { selectedId?: string }) {
+  const router = useRouter();
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
+  const [mapScope, setMapScope] = useState<"global" | "region">("global");
   const theme = useSyncExternalStore(subscribeTheme, readTheme, serverTheme);
   const [reviews, setReviews] = useState<Record<string, Review>>(storedReviews);
   const [separated, setSeparated] = useState<string[]>(storedSplits);
@@ -58,7 +64,7 @@ export default function RegionalWorkspace({ selectedId }: { selectedId?: string 
     return () => { active = false; controller.abort(); clearInterval(timer); };
   }, []);
   const hubs = useMemo(() => snapshot ? buildRegionalHubs(snapshot.flashpoints, new Set(separated)) : [], [snapshot, separated]);
-  const selected = selectedId ? hubs.find((hub) => hub.id === selectedId) || emptyCountryHub(selectedId) : null;
+  const selected = selectedId ? hubs.find((hub) => hub.id === selectedId) || emptyRegionalHub(selectedId) : null;
   const nearby = useMemo(() => {
     const center = selected?.center;
     if (!center || !snapshot) return [];
@@ -73,7 +79,7 @@ export default function RegionalWorkspace({ selectedId }: { selectedId?: string 
   }, [hubs, selected]);
   const list = query.trim() ? [
     ...hubs.filter((hub) => hub.name.toLowerCase().includes(query.toLowerCase())),
-    ...countryCatalog.filter((country) => country.name.toLowerCase().includes(query.toLowerCase()) && !hubs.some((hub) => hub.id === country.id)).map((country) => emptyCountryHub(country.id)!),
+    ...regionCatalog.filter((region) => region.name.toLowerCase().includes(query.toLowerCase()) && !hubs.some((hub) => hub.id === region.id)).map((region) => emptyRegionalHub(region.id)!),
   ] : hubs;
   function updateReview(id: string, patch: Partial<Review>) {
     setReviews((old) => {
@@ -93,26 +99,45 @@ export default function RegionalWorkspace({ selectedId }: { selectedId?: string 
   const issues = snapshot?.results.filter((result) => result.health.state !== "healthy") || [];
   return <main className="intelligence-desk regional-page" data-theme={theme}>
     <header className="regional-header">
-      <div><Link href="/">← Dashboard</Link><span> / </span><Link href="/regions">Regions</Link>{selected && <span> / {selected.name}</span>}</div>
-      <span>REGIONAL INTELLIGENCE</span>
+      <Link className="regional-brand" href="/">KNUCKLETAT<small>aggregated open source intel</small></Link>
+      <span>LIVE MONITOR · 60s refresh{snapshot ? ` · ${new Date(snapshot.flashpoints.generatedAt).toLocaleTimeString("en", { timeZone: "UTC", hour: "2-digit", minute: "2-digit" })} UTC` : ""}</span>
     </header>
+    <nav className="desk-navigation regional-main-navigation" aria-label="Workspace">
+      <Link href="/" className="desk-main-link">Global</Link>
+      <Link href={selectedId ? `/regions/${selectedId}` : "/regions"} className="desk-main-link" aria-current="page">My desk</Link>
+      <Link href="/?view=space" className="desk-main-link">Satellites</Link>
+      <Link href="/?view=sources" className="desk-main-link">Sources</Link>
+    </nav>
+    <RegionalHubPills hubs={hubs} selectedId={selectedId || ""} />
     {selectedId ? selected && snapshot ? <>
       <div className="regional-hero">
-        <div><small>REGIONAL HUB · LIVE MONITOR</small><h1>{selected.name}</h1><p>Headlines mentioning this region, topic watches, nearby observations, and their original sources.</p></div>
+        <div><small>REGIONAL DESK / {selected.name.toUpperCase()}</small><h1>{selected.name} watch</h1><p>Reporting, provider observations, public channel previews, and orbital context in one regional view.</p><FollowRegionButton region={{ id: selected.id, name: selected.name }} /></div>
         <div className="regional-metrics"><strong>{selected.events.length}<small>headline groups</small></strong><strong>{selected.watches.length}<small>topic watches</small></strong><strong>{selected.sources.length}<small>publishers</small></strong></div>
       </div>
-      <section className="regional-brief" aria-label="Regional brief">
-        <h2>Recent reporting</h2>
-        {regionalBrief(selected, Date.parse(snapshot!.flashpoints.generatedAt)).map((line) => <p key={line}>{line}</p>)}
-        <small>Generated from the current 24 hour evidence window · refreshed every minute · no claim of independent verification</small>
-      </section>
-      <section className="regional-map-section" aria-label="Regional map">
-        <div><h2>Regional context</h2><p>Rings mark a country or waterway context center. Filled points show only provider supplied observations; they do not locate every headline.</p></div>
-        <RegionalMap items={[...selected.events.flatMap((event) => event.reports).filter((report) => !!report.location), ...nearby]} flashpoints={selected.watches} satellites={[]} track={[]} selected={null} theme={theme} onSelect={(id) => {
+      <div className="regional-desk-grid">
+      <section className="regional-map-section" aria-label="Situation map">
+        <div className="regional-section-head"><h2>{mapScope === "global" ? "Global situation" : "Regional context"}</h2><div className="regional-map-switch"><button aria-pressed={mapScope === "global"} onClick={() => setMapScope("global")}>Global</button><button aria-pressed={mapScope === "region"} onClick={() => setMapScope("region")}>Region</button></div></div>
+        <RegionalMap key={mapScope} items={mapScope === "global" ? snapshot.results.flatMap((result) => result.data) : [...selected.events.flatMap((event) => event.reports).filter((report) => !!report.location), ...nearby]} flashpoints={mapScope === "global" ? snapshot.flashpoints.data : selected.watches} satellites={[]} track={[]} selected={null} highlighted={selected.watches.map((watch) => watch.id)} theme={theme} onSelect={(id) => {
           const event = selected.events.find((candidate) => candidate.id === id || candidate.reports.some((report) => report.id === id));
           if (event) document.getElementById(`event-${encodeURIComponent(event.id)}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
-          else document.getElementById(`observation-${encodeURIComponent(id)}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
-        }} space={false} focus={selected.center} radiusKm={900} label={`${selected.name} context map`} />
+          else if (nearby.some((item) => item.id === id)) document.getElementById(`observation-${encodeURIComponent(id)}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+          else {
+            const watch = snapshot.flashpoints.data.find((item) => item.id === id);
+            if (watch && watch.region !== "Location unresolved") router.push(`/regions/${regionId(watch.region)}`);
+          }
+        }} space={false} focus={mapScope === "region" ? selected.center : undefined} radiusKm={900} label={`${mapScope === "global" ? "Global situation" : selected.name + " context"} map`} />
+        <p className="regional-map-explainer">Filled points are provider locations; rings are country or waterway context, not precise incident sites.</p>
+      </section>
+      <RegionalDeskStream key={selected.id} hub={selected} nearby={nearby} />
+      </div>
+      <div className="regional-support-grid">
+        <RegionalSatellites key={selected.id} name={selected.name} center={selected.center} />
+        <section className="regional-coverage-panel"><div className="regional-section-head"><h2>Source coverage</h2><Link href="/?view=sources">Inspect sources ↗</Link></div><p>{selected.sources.length ? selected.sources.join(" · ") : "No qualifying publisher reports in the current window."}</p><p>{issues.length ? `${issues.length} feed ${issues.length === 1 ? "has" : "have"} retrieval issues. A quiet watch needs a coverage check.` : "Responding feeds do not verify the claims they carry."}</p></section>
+      </div>
+      <section className="regional-brief" aria-label="Regional brief">
+        <h2>Reporting brief</h2>
+        {regionalBrief(selected, Date.parse(snapshot.flashpoints.generatedAt)).map((line) => <p key={line}>{line}</p>)}
+        <small>Current 24 hour evidence window · refreshed every minute · no claim of independent verification</small>
       </section>
       <div className="regional-columns">
         <section>
@@ -124,7 +149,6 @@ export default function RegionalWorkspace({ selectedId }: { selectedId?: string 
         <aside>
           <section className="regional-side"><h2>Topic watches</h2>{selected.watches.map((watch) => <div key={watch.id}><strong>{watch.topic}</strong><span>{watch.state} · {watch.count} reports</span><small>{watch.reasons[0]}</small></div>)}<p>Watches combine reports by named region and topic. They can contain separate events.</p></section>
           {!!related.length && <section className="regional-side"><h2>Also mentioned</h2><p>These regions appear in at least one of the same source records.</p>{related.map((hub) => <Link key={hub.id} href={`/regions/${hub.id}`}>{hub.name} ↗</Link>)}</section>}
-          <section className="regional-side"><h2>Coverage</h2><p>{selected.sources.length ? selected.sources.join(" · ") : "No qualifying publisher reports in this window."}</p><p>{issues.length ? `${issues.length} source feeds have retrieval issues. Check source health before interpreting silence.` : "All responding feeds reported healthy at the last snapshot. Availability does not verify their claims."}</p><Link href="/?view=sources">View source health ↗</Link></section>
           <section className="regional-side"><h2>Saved investigations</h2>{selected.events.filter((event) => reviews[event.id]?.saved).map((event) => <a href={`#event-${encodeURIComponent(event.id)}`} key={event.id}>{event.title}</a>)}{!selected.events.some((event) => reviews[event.id]?.saved) && <p>Save event cards to keep them here on this device.</p>}</section>
         </aside>
       </div>

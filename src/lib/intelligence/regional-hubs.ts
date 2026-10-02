@@ -30,9 +30,15 @@ const display = new Intl.DisplayNames(["en"], { type: "region" });
 export const countryCatalog = Object.entries(COUNTRY_CENTROIDS)
   .filter(([code]) => code.length === 2)
   .map(([code, [lng, lat]]) => ({ id: regionId(display.of(code) || code), name: display.of(code) || code, center: { lat, lng } }));
-export function emptyCountryHub(id: string): RegionalHub | undefined {
-  const country = countryCatalog.find((item) => item.id === id);
-  return country && { ...country, watches: [], events: [], latestAt: "", sources: [] };
+export const regionCatalog = [
+  ...countryCatalog,
+  { id: "strait-of-hormuz", name: "Strait of Hormuz", center: { lat: 26.6, lng: 56.5 } },
+  { id: "suez-canal", name: "Suez Canal", center: { lat: 30.5, lng: 32.4 } },
+  { id: "red-sea", name: "Red Sea", center: { lat: 20, lng: 38 } },
+];
+export function emptyRegionalHub(id: string): RegionalHub | undefined {
+  const region = regionCatalog.find((item) => item.id === id);
+  return region && { ...region, watches: [], events: [], latestAt: "", sources: [] };
 }
 
 const ignored = new Set(["a", "an", "and", "as", "at", "by", "for", "from", "in", "is", "of", "on", "the", "to", "with", "after", "over", "says", "said"]);

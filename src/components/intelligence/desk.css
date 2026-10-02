@@ -2420,3 +2420,67 @@ html[data-desk-theme="day"] .desk-hover-card small {
   .desk-satellite-grid .desk-context { min-height: auto; }
   .desk-satellite-grid .desk-map-loading { min-height: 350px; }
 }
+
+/* Persistent desk navigation, shared by the global and regional views. */
+.desk-navigation .desk-main-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 13px;
+  border: 1px solid var(--desk-edge);
+  color: var(--desk-text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.desk-navigation .desk-main-link:hover,
+.desk-navigation .desk-main-link[aria-current="page"] {
+  border-color: var(--desk-text);
+  background: var(--desk-text);
+  color: var(--desk-panel);
+  text-decoration: none;
+}
+.desk-region-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  border-top: 1px solid var(--desk-edge);
+  border-bottom: 1px solid var(--desk-edge);
+  padding: 9px 0;
+}
+.desk-region-label {
+  flex: 0 0 auto;
+  color: var(--desk-muted);
+  font: 700 10px/1.4 "JetBrains Mono", monospace;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.desk-region-pills { display: flex; align-items: center; gap: 6px; min-width: 0; overflow-x: auto; scrollbar-width: thin; }
+.desk-region-pill,
+.desk-region-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  min-height: 30px;
+  border: 1px solid var(--desk-edge);
+  border-radius: 999px;
+  padding: 5px 11px;
+  color: var(--desk-text) !important;
+  background: var(--desk-panel);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.desk-region-pill:hover,
+.desk-region-pill[aria-current="page"],
+.desk-region-all:hover,
+.desk-region-all[aria-current="page"] { border-color: var(--desk-accent); background: var(--desk-active); text-decoration: none !important; }
+.desk-region-pin { color: var(--desk-accent); font-size: 9px; }
+.desk-region-count { color: var(--desk-muted); font: 10px "JetBrains Mono", monospace; }
+.desk-region-empty { color: var(--desk-muted); font-size: 11px; white-space: nowrap; }
+.desk-region-all { margin-left: auto; }
+@media (max-width: 700px) {
+  .desk-region-nav { gap: 8px; }
+  .desk-region-label { display: none; }
+  .desk-region-all { padding-inline: 8px; }
+  .desk-navigation .desk-main-link { font-size: 11px; padding: 7px 8px; }
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildRegionalHubs, emptyCountryHub, regionId, regionalBrief } from "./regional-hubs";
+import { buildRegionalHubs, emptyRegionalHub, regionId, regionalBrief } from "./regional-hubs";
 import type { Flashpoint, FlashpointResult } from "./flashpoints";
 import type { Development } from "./types";
 
@@ -38,6 +38,7 @@ describe("regional event candidates", () => {
     expect(hub.events).toHaveLength(2);
     expect(regionalBrief(hub, Date.parse(at))[0]).toContain("2 headline groups mentioning Ukraine");
     expect(regionId("Strait of Hormuz")).toBe("strait-of-hormuz");
-    expect(emptyCountryHub("canada")?.center).toBeDefined();
+    expect(emptyRegionalHub("canada")?.center).toBeDefined();
+    expect(emptyRegionalHub("strait-of-hormuz")?.center).toEqual({ lat: 26.6, lng: 56.5 });
   });
 });

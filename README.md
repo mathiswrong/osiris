@@ -1,3 +1,16 @@
+# Knuckle Tat · Osiris Fork
+
+An independent global intelligence workspace built on [Osiris](https://github.com/simplifaisoul/osiris).
+
+- A readable Day theme, optional Night theme and a compact ten-row flashpoint monitor.
+- Connected regional investigations: attributed reporting, public aircraft positions, provider military flags, satellite subpoints and an optional AIS vessel feed.
+- A 3D orbital traffic view with mission colors, hover cards, orbit trails and sourced spacecraft / constellation dossiers.
+- Sixteen original reporting and alert feeds, visible source health, and explicit limits on what proximity or repeated reporting can establish.
+
+Start with `npm ci` and `npm run dev -- --port 3217`. See [workspace setup, source coverage and limitations](docs/INTELLIGENCE-WORKSPACE.md). The new workspace is at `/`; the legacy explorer remains at `/explore`. AIS requires a server-side key. Original licensing and attribution are retained.
+
+## Original Osiris documentation — legacy explorer
+
 <div align="center">
 
 # ⬡ OSIRIS

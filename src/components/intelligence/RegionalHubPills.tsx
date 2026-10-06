@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { trackKeyEvent } from "@/lib/analytics";
 import { emptyRegionalHub, type RegionalHub } from "@/lib/intelligence/regional-hubs";
 
 type FollowedRegion = { id: string; name: string };
@@ -48,7 +49,11 @@ export function FollowRegionButton({ region }: { region: FollowedRegion }) {
         const next = isFollowed
           ? readFollowed().filter((item) => item.id !== region.id)
           : [...readFollowed().filter((item) => item.id !== region.id), region];
-        try { localStorage.setItem(storageKey, JSON.stringify(next.slice(0, 24))); } catch {}
+        try {
+          const stored = next.slice(0, 24);
+          localStorage.setItem(storageKey, JSON.stringify(stored));
+          if (!isFollowed && stored.some((item) => item.id === region.id)) trackKeyEvent("follow_region", { region_id: region.id });
+        } catch {}
         window.dispatchEvent(new Event(changeEvent));
       }}
     >

@@ -7,6 +7,7 @@ import {
   Activity,
   ArrowUpRight,
   Globe2,
+  MapPin,
   Satellite,
   Search,
   RefreshCw,
@@ -35,6 +36,7 @@ import { HoverPreview } from "./HoverPreview";
 import InvestigationWorkspace from "./InvestigationWorkspace";
 import RegionalHubPills, { MyDeskLink } from "./RegionalHubPills";
 import { useSignalTiles, SignalPulse, useSignalsFeed } from "./SignalsWorkspace";
+import FlashpointGlobe from "./FlashpointGlobe";
 import "./desk.css";
 const SatelliteGlobe = dynamic(() => import("./SatelliteGlobe"), {
   ssr: false,
@@ -319,7 +321,7 @@ export default function IntelligenceDesk() {
     ? results[selectedItem.sourceId]?.health
     : null;
   return (
-    <main className="intelligence-desk" data-theme={theme}>
+    <main className={`intelligence-desk${mode === "global" ? " globe-home" : ""}`} data-theme={theme}>
       <header className="desk-header">
         <div className="desk-brand">
           <Image
@@ -352,8 +354,8 @@ export default function IntelligenceDesk() {
           aria-pressed={mode === "global"}
           onClick={() => switchMode("global")}
         >
-          <Globe2 size={14} />
-          Global
+          <MapPin size={14} />
+          Map
         </button>
         <MyDeskLink hubs={regionalHubs} />
         <button aria-pressed={mode === "space"} onClick={() => switchMode("space")}>
@@ -374,16 +376,17 @@ export default function IntelligenceDesk() {
           DIRECT PROVIDERS · ATTRIBUTED RECORDS
         </span>
         <button
+          className="desk-refresh"
           aria-label="Refresh dashboard"
           disabled={busy}
           onClick={() => setRefresh((v) => v + 1)}
         >
           <RefreshCw size={13} />
-          {busy ? "Updating" : "Refresh"}
+          <span>{busy ? "Updating" : "Refresh"}</span>
         </button>
       </nav>
-      <RegionalHubPills hubs={regionalHubs} />
-      <div className="desk-healthstrip">
+      {mode !== "global" && <RegionalHubPills hubs={regionalHubs} />}
+      {mode !== "global" && <div className="desk-healthstrip">
         <span className="desk-green">
           {health.filter((h) => h.state === "healthy").length} sources
           responding
@@ -398,7 +401,7 @@ export default function IntelligenceDesk() {
             ? `${issues.length} source ${issues.length === 1 ? "issue" : "issues"} — inspect Source health`
             : "Availability does not verify claims"}
         </span>
-      </div>
+      </div>}
       {mode === "sources" ? (
         <section className="desk-panel desk-source-page">
           <div className="desk-panel-title">
@@ -474,12 +477,14 @@ export default function IntelligenceDesk() {
               publisher reports ordered by time. This is a transparent starting
               rule, not a global threat score. Repetition across publishers is
               not treated as independent confirmation. Flashpoints group
-              headline topics and named regions; a continuous 24-hour baseline
+              headline topics, health reporting leads and named regions; a continuous 24-hour baseline
               is required for surge detection. Collection runs while this
               dashboard is open or the collector process is running.
             </p>
           </div>
         </section>
+      ) : mode === "global" ? (
+        <FlashpointGlobe result={flashpoints} error={monitorError} theme={theme} feed={signalFeed} satellites={satellites} onActivateSatellites={activateSatellite} onSelectSatellite={(id) => { setSatelliteId(id); switchMode("space"); }} />
       ) : (
         <DashboardGrid>
             <DashboardTile id="flashpoints" title="Flashpoint Monitor" w={6} h={16}>
@@ -1123,7 +1128,7 @@ export default function IntelligenceDesk() {
         <span>
           Source status describes retrieval, not truth · UTC timestamps
         </span>
-        <Link href="/#signals">Signals & source lookups ↗</Link>
+        <Link href="/signals">Signals & source lookups ↗</Link>
       </footer>
     </main>
   );

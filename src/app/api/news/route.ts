@@ -4,6 +4,8 @@ import { cachedSource } from '@/lib/sourceCache';
 import { fingerprint, htmlToText, parseChannelPage, splitHeadline, type TelegramPost } from '@/lib/telegram';
 import type { Bloc } from '@/lib/alert-digest';
 import { alertKind, budgetedLookup, locateReport, type AlertKind, type AlertPlace } from '@/lib/alert-places';
+import { ADDITIONAL_REPORTING_SOURCES } from '@/lib/intelligence/types';
+import { readSource } from '@/lib/intelligence/sources';
 
 /**
  * OSIRIS — Live Alerts news feed.
@@ -31,7 +33,7 @@ import { alertKind, budgetedLookup, locateReport, type AlertKind, type AlertPlac
 // quote share, same window): Middle East Spectator 12/41, NEXTA Live 15/45
 // (and 1% English), Bellum Acta 25/44 (also runs advertising in its footer).
 // Earlier: OSINTtechnical (silent since June 2022), Clash Report and Liveuamap.
-interface Feed { handle: string; name: string; lean: string; bloc: Bloc }
+interface Feed { handle: string; name: string; lean: string; bloc: Bloc | null }
 
 const TELEGRAM_CHANNELS: Feed[] = [
   // Incident feeds: what happened, where, with footage. Least commentary of any source measured.
@@ -77,23 +79,22 @@ const WIRE_FEEDS: (Feed & { url: string })[] = [
   { handle: 'africanews', url: 'https://www.africanews.com/feed/rss',                name: 'Africanews',       lean: 'Pan-African newsroom',         bloc: 'regional' },
 ];
 
-const POSTS_PER_CHANNEL = 8;
-/** A wire publishes far more than a channel, so it contributes fewer items. */
-const ITEMS_PER_WIRE = 5;
+// ponytail: latest 100 items per source; add incremental ingestion if this cap drops current reports.
+const MAX_ITEMS_PER_SOURCE = 100;
 const CHANNEL_TTL_MS = 3 * 60_000;
 const WIRE_TTL_MS = 5 * 60_000;
 /** A live feed shows live posts: anything older is left out, however quiet the channel. */
 export const MAX_POST_AGE_MS = 72 * 3_600_000;
 const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
-const RISK_KEYWORDS = ['war','missile','strike','attack','crisis','tension','military','conflict','defense','clash','nuclear','invasion','bomb','drone','weapon','sanctions','ceasefire','escalation', 'killed', 'destroyed', 'operation', 'casualty', 'frontline', 'threat'];
+const RISK_KEYWORDS = ['war','missile','strike','attack','crisis','tension','military','conflict','defense','clash','nuclear','invasion','bomb','drone','weapon','sanctions','ceasefire','escalation', 'killed', 'destroyed', 'operation', 'casualty', 'frontline', 'threat', 'plague', 'pneumonia', 'outbreak', 'epidemic', 'quarantine', 'cholera', 'ebola', 'mpox'];
 
 /* Whole words, plus plural and verb endings. Substring matching scored
    "award", "software" and "warning" as war, "cooperation" as an operation and
    "Bombay" as a bomb. */
 const RISK_PATTERNS = RISK_KEYWORDS.map(kw => ({
   kw,
-  rx: new RegExp(`\\b${kw === 'casualty' ? 'casualt(?:y|ies)' : `${kw}(?:s|es|ed|ing)?`}\\b`, 'i'),
+  rx: new RegExp(`\\b${kw === 'casualty' ? 'casualt(?:y|ies)' : kw === 'quarantine' ? 'quarantin(?:e[ds]?|ing)' : `${kw}(?:s|es|ed|ing)?`}\\b`, 'i'),
 }));
 
 const KEYWORD_COORDS: Record<string, [number, number]> = {
@@ -137,8 +138,9 @@ export function findCoords(text: string): { coords: [number, number]; anchor: st
 /** The newest posts inside the live window, newest last as Telegram orders them. */
 export function recentPosts(posts: TelegramPost[], now = Date.now()): TelegramPost[] {
   return posts
-    .filter(p => now - Date.parse(p.publishedAt) <= MAX_POST_AGE_MS)
-    .slice(-POSTS_PER_CHANNEL);
+    .filter(p => Date.parse(p.publishedAt) <= now && now - Date.parse(p.publishedAt) <= MAX_POST_AGE_MS)
+    .sort((a, b) => Date.parse(a.publishedAt) - Date.parse(b.publishedAt))
+    .slice(-MAX_ITEMS_PER_SOURCE);
 }
 
 export interface ChannelPost { post: TelegramPost; channel: Pick<Channel, 'handle' | 'name' | 'lean' | 'bloc'> }
@@ -218,13 +220,24 @@ const wireFeeds = WIRE_FEEDS.map(feed => ({
       headers: { 'User-Agent': BROWSER_UA, Accept: 'application/rss+xml, application/xml;q=0.9, */*;q=0.8' },
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const items = parseRSSItems(await res.text(), feed.name).slice(0, ITEMS_PER_WIRE);
+    const items = parseRSSItems(await res.text(), feed.name);
     // Oldest first, as a channel page arrives, so recentPosts takes the newest.
     return items
       .map(item => wirePost(item, feed))
       .sort((a, b) => Date.parse(a.publishedAt) - Date.parse(b.publishedAt));
   }, WIRE_TTL_MS),
 }));
+
+const additionalFeeds = ADDITIONAL_REPORTING_SOURCES.map(def => {
+  const channel: Feed = { handle: def.id, name: def.name, lean: def.lean, bloc: def.bloc };
+  return {
+    channel,
+    load: async () => (await readSource(def)).data.map(item => wirePost({
+      title: item.title, description: item.excerpt || "", link: item.url,
+      pubDate: item.occurredAt, source: item.source,
+    }, channel)).sort((a, b) => Date.parse(a.publishedAt) - Date.parse(b.publishedAt)),
+  };
+});
 
 export interface RssItem { title: string; description: string; link: string; pubDate: string; source: string }
 
@@ -281,7 +294,7 @@ const hashId = (s: string) => crypto.createHash('md5').update(s).digest('hex');
 
 /** How an item names where it came from: the channel, or the wire's own site. */
 export function sourceRef(channel: Channel): string {
-  const wire = WIRE_FEEDS.find(f => f.handle === channel.handle);
+  const wire = WIRE_FEEDS.find(f => f.handle === channel.handle) || ADDITIONAL_REPORTING_SOURCES.find(f => f.id === channel.handle);
   if (!wire) return `t.me/${channel.handle}`;
   try {
     return new URL(wire.url).hostname.replace(/^www\./, '');
@@ -290,7 +303,7 @@ export function sourceRef(channel: Channel): string {
   }
 }
 
-interface Carrier { source: string; source_name: string; lean: string; bloc: Bloc; link: string; published: string }
+interface Carrier { source: string; source_name: string; lean: string; bloc: Bloc | null; link: string; published: string }
 
 type NewsItem = {
   id: string;
@@ -373,7 +386,7 @@ interface SourceHealth {
   handle: string;
   name: string;
   lean: string;
-  bloc: Bloc;
+  bloc: Bloc | null;
   kind: 'telegram' | 'wire';
   count: number;
   latest: string | null;
@@ -391,12 +404,12 @@ async function buildFeed(): Promise<FeedPayload> {
     const now = Date.now();
     /* Channels and wires are read the same way and fail the same way: one
        source that is slow or blocked costs its own items, not the feed. */
-    const loaded = await Promise.all([...channelFeeds, ...wireFeeds].map(async f => {
+    const loaded = await Promise.all([...channelFeeds, ...wireFeeds, ...additionalFeeds].map(async f => {
       const all = await f.load().catch(() => [] as TelegramPost[]);
       return { channel: f.channel, all, posts: recentPosts(all, now) };
     }));
 
-    const wireHandles = new Set(WIRE_FEEDS.map(f => f.handle));
+    const wireHandles = new Set([...WIRE_FEEDS.map(f => f.handle), ...ADDITIONAL_REPORTING_SOURCES.map(f => f.id)]);
     const sources = loaded.map(({ channel, all, posts }) => ({
       handle: channel.handle,
       name: channel.name,

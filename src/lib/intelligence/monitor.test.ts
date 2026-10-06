@@ -116,6 +116,26 @@ describe("mission evidence scope", () => {
   });
 });
 describe("flashpoint evidence controls", () => {
+  it("retains a continuing watch's age after old reports leave the current window", () => {
+    const old = report("old-watch", "Ukraine ceasefire negotiations continue", "a", 30);
+    const fresh = report("fresh-watch", "Ukraine ceasefire negotiations resume", "a", 1);
+    const rs = [result("a", [fresh])];
+    const journal: Journal = { version: 1, samples: [{ at: now, healthy: ["a"] }], records: [
+      { ...old, firstSeen: old.occurredAt }, { ...fresh, firstSeen: fresh.occurredAt },
+    ] };
+    const watch = detectFlashpoints(journal, rs, now).data[0];
+    expect(watch.firstSeen).toBe(old.occurredAt);
+    expect(watch.reports.map((row) => row.id)).toEqual([fresh.id]);
+  });
+  it("detects health reports that name the city, including official denials, and excludes ancient outbreaks", () => {
+    for (const place of ["Irkutsk", "Shelekhov", "Siberia"]) {
+      expect(reportGroups(report("health", `${place} lab worker dies of suspected plague`))[0])
+        .toMatchObject({ region: "Russia", topic: "Public health", location: { precision: "country context" } });
+    }
+    expect(reportGroups(report("denial", "Russia denies plague after lab worker death"))[0].topic).toBe("Public health");
+    expect(reportGroups(report("old", "Earliest known plague outbreak in Russia happened 5,500 years ago"))).toEqual([]);
+    expect(reportGroups(report("sports", "Measles cases reported among football supporters in Russia"))[0].topic).toBe("Public health");
+  });
   it("keeps unrelated unlocated reports separate instead of manufacturing a multi-source event", () => {
     const rs = [
       result("a", [report("x", "Rebels threaten peace negotiations", "a")]),

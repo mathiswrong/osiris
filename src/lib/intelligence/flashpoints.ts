@@ -1,5 +1,6 @@
 import { COUNTRY_CENTROIDS } from "../countryCentroids";
 import type { Development, SourceResult } from "./types";
+import { healthSignal } from "../health-signals";
 const HOUR = 3_600_000;
 export interface Journal {
   version: 1;
@@ -39,13 +40,46 @@ export interface FlashpointResult {
   persistent: boolean;
   unlocatedReports: number;
 }
+export const WATCH_STATUSES = [
+  { id: "emerging", label: "Emerging", color: "#a81824" },
+  { id: "early", label: "Early reports", color: "#685647" },
+  { id: "multiple", label: "Multi-source", color: "#8e481b" },
+  { id: "verified", label: "Verified observations", color: "#08786c" },
+  { id: "long-term", label: "Long term", color: "#555555" },
+] as const;
+/** Reporting volume is attention, not an inferred incident severity. */
+export function watchAttention(watch: Flashpoint, theme: "day" | "night" = "day") {
+  const level = watch.state === "measured alert" ? "alert"
+    : watch.state === "emerging" ? "surge"
+    : watch.count >= 10 ? "high" : watch.count >= 4 ? "active" : "low";
+  const scales = {
+    alert: { label: "Measured alert", day: "#a81824", night: "#ff9399" },
+    surge: { label: "Reporting surge", day: "#a81824", night: "#ff9399" },
+    high: { label: "High volume", day: "#a81824", night: "#ff9399" },
+    active: { label: "Active reporting", day: "#a34318", night: "#f7ad81" },
+    low: { label: "Low volume", day: "#795421", night: "#dbc09a" },
+  };
+  return { level, label: scales[level].label, color: scales[level][theme] };
+}
+export type WatchStatus = (typeof WATCH_STATUSES)[number]["id"];
+export type WatchFilter = "all" | WatchStatus;
+export function watchTags(watch: Flashpoint, now: number): WatchStatus[] {
+  const primary: WatchStatus = watch.state === "measured alert" ? "verified"
+    : watch.state === "emerging" ? "emerging"
+    : watch.state === "multi-source watch" ? "multiple" : "early";
+  return primary !== "verified" && now - Date.parse(watch.firstSeen) >= 24 * HOUR
+    ? [primary, "long-term"] : [primary];
+}
+export function matchesWatchFilter(watch: Flashpoint, filter: WatchFilter, now: number) {
+  return filter === "all" || watchTags(watch, now).includes(filter);
+}
 const display = new Intl.DisplayNames(["en"], { type: "region" });
 const aliases: Record<string, string[]> = {
   UA: ["Ukraine", "Ukrainian", "Kyiv", "Kiev", "Kharkiv", "Odesa"],
   IR: ["Iran", "Iranian", "Tehran"],
   IL: ["Israel", "Israeli", "Tel Aviv"],
   PS: ["Gaza", "Palestinian", "West Bank"],
-  RU: ["Russia", "Russian", "Moscow"],
+  RU: ["Russia", "Russian", "Moscow", "Irkutsk", "Shelekhov", "Siberia", "Siberian"],
   US: ["United States", "U.S.", "American"],
   GB: ["United Kingdom", "Britain", "British"],
   CN: ["China", "Chinese", "Beijing"],
@@ -124,7 +158,7 @@ const topics = [
   {
     name: "Disaster & health",
     pattern:
-      /\b(?:earthquakes?|floods?|wildfires?|hurricanes?|typhoons?|cyclones?|tsunami|eruption|epidemic|outbreak|famine|evacuat\w*|landslides?)\b/i,
+      /\b(?:earthquakes?|floods?|wildfires?|hurricanes?|typhoons?|cyclones?|tsunami|eruption|famine|evacuat\w*|landslides?)\b/i,
   },
   {
     name: "Trade & infrastructure",
@@ -134,16 +168,17 @@ const topics = [
 ];
 export function reportGroups(item: Development) {
   if (item.kind !== "report") return [];
-  const text = item.title;
+  const health = healthSignal(item.title, item.excerpt);
+  const text = health ? `${item.title}\n${item.excerpt || ""}` : item.title;
   if (
-    /\b(?:football|soccer|cricket|champions league|world cup|tennis|olympic|movie|film review|opinion|podcast)\b/i.test(
+    !health && /\b(?:football|soccer|cricket|champions league|world cup|tennis|olympic|movie|film review|opinion|podcast)\b/i.test(
       text,
     )
   )
     return [];
   // Local crime and metaphorical "trade war / truce" are not armed-conflict signals.
   if (
-    /\b(?:man|woman|teen|teenager) (?:is )?(?:accused|charged|jailed|arrested)\b/i.test(
+    !health && /\b(?:man|woman|teen|teenager) (?:is )?(?:accused|charged|jailed|arrested)\b/i.test(
       text,
     ) &&
     !/\b(?:terror|militia|military|missile|bomb)\w*/i.test(text)
@@ -153,7 +188,7 @@ export function reportGroups(item: Development) {
     /\btrade (?:war|truce)\b/gi,
     "trade negotiations",
   );
-  const topic = topics.find((t) =>
+  const topic = health ? { name: "Public health" } : topics.find((t) =>
     t.pattern.test(
       classificationText.replace(
         /\b(?:Cold War(?:-era)?|World War [I12]+)\b/gi,
@@ -162,7 +197,7 @@ export function reportGroups(item: Development) {
     ),
   );
   if (!topic) return [];
-  // Headlines provide country context only. No city/event point is invented.
+  // Named places in the headline/health lead provide country context only.
   const hits = matchers
     .filter((r) => r.pattern.test(text))
     .filter(
@@ -332,6 +367,12 @@ export function detectFlashpoints(
     string,
     { meta: ReturnType<typeof reportGroups>[number]; rows: typeof records }
   >();
+  // A continuing watch keeps its age even after its oldest report leaves the 24h display window.
+  const watchFirstSeen = new Map<string, string>();
+  for (const row of journal.records) for (const group of reportGroups(row)) {
+    const previous = watchFirstSeen.get(group.key);
+    if (!previous || row.firstSeen < previous) watchFirstSeen.set(group.key, row.firstSeen);
+  }
   for (const row of records)
     for (const group of reportGroups(row)) {
       const bucket = grouped.get(group.key) || { meta: group, rows: [] };
@@ -380,7 +421,7 @@ export function detectFlashpoints(
       location: meta.location,
       count: unique.length,
       publishers,
-      firstSeen: unique.reduce(
+      firstSeen: watchFirstSeen.get(id) || unique.reduce(
         (a, r) => (r.firstSeen < a ? r.firstSeen : a),
         unique[0].firstSeen,
       ),
@@ -395,7 +436,7 @@ export function detectFlashpoints(
           : baselineReady
             ? "No qualifying surge over the comparable 18-hour baseline."
             : "Learning the baseline: 24 hours of continuous observations needed for surge detection.",
-        "Grouped by headline topic and named region; these reports may describe different events. Multiple publishers do not establish independent confirmation.",
+        "Grouped by headline topic, health reporting leads and named region; these reports may describe different events. Multiple publishers do not establish independent confirmation.",
       ],
     });
   }

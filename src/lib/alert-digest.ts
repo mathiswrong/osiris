@@ -12,6 +12,8 @@
  * overview route can build the same brief on the server.
  */
 
+import { healthSignal } from './health-signals';
+
 export type Bloc = 'western' | 'russian' | 'regional' | 'independent';
 
 export const BLOCS: Record<Bloc, { label: string; short: string; color: string }> = {
@@ -108,10 +110,10 @@ interface Term { id: string; label: string; terms: string[] }
  * terms of three letters or fewer are always whole words.
  */
 export const THEATRES: Term[] = [
-  { id: 'russia-ukraine', label: 'Russia–Ukraine war', terms: [
+  { id: 'russia-ukraine', label: 'Russia & Ukraine', terms: [
     'ukrain', 'kyiv', 'kiev', 'kharkiv', 'kharkov', 'donbas', 'donetsk', 'luhansk', 'lugansk', 'zaporizh',
     'zaporozh', 'kherson', 'crimea', 'kursk', 'belgorod', 'bryansk', 'odesa', 'odessa', 'dnipro', 'dnepr',
-    'pokrovsk', 'volchansk', 'kupyansk', 'zelensk', 'kremlin', 'putin', 'moscow', 'russia', 'geran',
+    'pokrovsk', 'volchansk', 'kupyansk', 'zelensk', 'kremlin', 'putin', 'moscow', 'russia', 'geran', 'irkutsk', 'shelekhov', 'siberia',
     'украин', 'киев', 'росси', 'кремл', 'путин', 'зеленск', 'донбас', 'харьков',
   ] },
   /* Palestinian and Lebanese newsrooms report at town level — "Jenin",
@@ -167,6 +169,7 @@ export const THEATRES: Term[] = [
 ];
 
 export const TOPICS: Term[] = [
+  { id: 'health', label: 'public health', terms: [] },
   { id: 'drones', label: 'drones', terms: ['drone', 'uav', 'geran', 'shahed', 'fpv', 'lancet', 'дрон', 'бпла', 'беспилот'] },
   { id: 'strikes', label: 'strikes', terms: ['strike', 'struck', 'missile', 'shelling', 'bombard', 'airstrike', 'rocket', 'explosion', 'impact', 'удар', 'ракет', 'обстрел', 'взрыв'] },
   { id: 'air-defence', label: 'air defence', terms: ['air defense', 'air defence', 'patriot', 's-400', 'iron dome', 'intercept', 'пво', 'перехват'] },
@@ -191,7 +194,7 @@ function compile(terms: string[]): RegExp {
 }
 
 const THEATRE_RX = THEATRES.map(t => ({ ...t, rx: compile(t.terms) }));
-const TOPIC_RX = TOPICS.map(t => ({ ...t, rx: compile(t.terms) }));
+const TOPIC_RX = TOPICS.filter(t => t.terms.length).map(t => ({ ...t, rx: compile(t.terms) }));
 
 const haystack = (r: Pick<DigestReport, 'title' | 'text'>) => `${r.title}\n${(r.text || '').slice(0, 800)}`;
 
@@ -199,7 +202,8 @@ export function classify(report: Pick<DigestReport, 'title' | 'text'>): { theatr
   const text = haystack(report);
   return {
     theatres: THEATRE_RX.filter(t => t.rx.test(text)).map(t => t.id),
-    topics: TOPIC_RX.filter(t => t.rx.test(text)).map(t => t.id),
+    topics: [...TOPIC_RX.filter(t => t.rx.test(text)).map(t => t.id),
+      ...(healthSignal(report.title, report.text || '') ? ['health'] : [])],
   };
 }
 

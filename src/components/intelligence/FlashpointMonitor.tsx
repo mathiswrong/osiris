@@ -7,6 +7,26 @@ import type {
   Flashpoint,
   FlashpointResult,
 } from "@/lib/intelligence/flashpoints";
+import { WATCH_STATUSES, matchesWatchFilter, watchTags, watchAttention, type WatchFilter } from "@/lib/intelligence/flashpoints";
+import type { CSSProperties } from "react";
+
+export function WatchFilters({ value, onChange, watches, now }: { value: WatchFilter; onChange: (value: WatchFilter) => void; watches: Flashpoint[]; now: number }) {
+  return <div className="watch-filters" role="group" aria-label="Filter watch status">
+    {[{ id: "all" as const, label: "All watches", color: "var(--desk-accent)" }, ...WATCH_STATUSES].map((status) => <button key={status.id} style={{ "--watch-color": status.color } as CSSProperties} aria-pressed={value === status.id} onClick={() => onChange(status.id)}>
+      {status.id !== "all" && <i aria-hidden="true" />}{status.label}<span>{watches.filter((watch) => matchesWatchFilter(watch, status.id, now)).length}</span>
+    </button>)}
+  </div>;
+}
+export function WatchTags({ watch, now }: { watch: Flashpoint; now: number }) {
+  return <span className="watch-tags">{watchTags(watch, now).map((id) => {
+    const status = WATCH_STATUSES.find((candidate) => candidate.id === id)!;
+    return <span key={id} className="watch-tag" style={{ "--watch-color": status.color } as CSSProperties}>{status.label}</span>;
+  })}</span>;
+}
+export function WatchActivity({ watch, theme }: { watch: Flashpoint; theme: "day" | "night" }) {
+  const attention = watchAttention(watch, theme);
+  return <small className="watch-activity" style={{ color: attention.color }}>{attention.label} · {watch.count} {watch.count === 1 ? "report" : "reports"} / 24h</small>;
+}
 import { HoverPreview } from "./HoverPreview";
 export function FlashpointMonitor({
   result,
@@ -19,7 +39,7 @@ export function FlashpointMonitor({
   onSelect: (id: string) => void;
   error: string;
 }) {
-  const [filter, setFilter] = useState("all"),
+  const [filter, setFilter] = useState<WatchFilter>("all"),
     [expanded, setExpanded] = useState(false);
   const [compact, setCompact] = useState(false);
   useEffect(() => {
@@ -31,7 +51,7 @@ export function FlashpointMonitor({
   }, []);
   const previewLimit = compact ? 5 : 10;
   const rows = (result?.data || []).filter(
-    (f) => filter === "all" || f.state === filter,
+    (f) => matchesWatchFilter(f, filter, Date.parse(result?.generatedAt || "")),
   );
   const seen = new Set<string>();
   const top = rows
@@ -59,22 +79,7 @@ export function FlashpointMonitor({
           Where to look next{" "}
           <span>· Hover for context · Select to investigate across feeds</span>
         </p>
-        <div className="desk-flash-filters">
-          {[
-            ["all", "All watches"],
-            ["emerging", "Emerging"],
-            ["single-source lead", "Early leads"],
-            ["measured alert", "Measured alerts"],
-          ].map(([id, name]) => (
-            <button
-              key={id}
-              aria-pressed={filter === id}
-              onClick={() => setFilter(id)}
-            >
-              {name}
-            </button>
-          ))}
-        </div>
+        <WatchFilters value={filter} onChange={setFilter} watches={result?.data || []} now={Date.parse(result?.generatedAt || "")} />
       </div>
       <div className={`desk-flash-grid ${expanded ? "is-expanded" : ""}`}>
         {(expanded ? rows : top).map((f, index) => (

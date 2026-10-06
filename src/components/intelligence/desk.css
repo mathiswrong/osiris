@@ -1173,38 +1173,35 @@ body:has(.intelligence-desk) {
 
 /* KNUCKLETAT: readable daylight workspace; orbital imagery keeps its own night canvas. */
 .intelligence-desk {
-  --desk-bg: #edf2f6;
+  --desk-bg: #ffffff;
   --desk-panel: #ffffff;
-  --desk-edge: #d5dfe7;
-  --desk-text: #1c3447;
-  --desk-muted: #536b7e;
+  --desk-edge: #cccccc;
+  --desk-text: #171717;
+  --desk-muted: #595959;
   --desk-green: #08786c;
   --desk-amber: #a85c11;
-  --desk-soft: #f5f8fa;
-  --desk-hover: #eaf3f8;
-  --desk-active: #e1f0f5;
-  --desk-accent: #176693;
-  font:
-    14px/1.5 Inter,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+  --desk-soft: #f6f6f6;
+  --desk-hover: #f1f1f1;
+  --desk-active: #fceced;
+  --desk-accent: #a81824;
+  --desk-font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --desk-data-font: "Courier New", Courier, monospace;
+  font: 14px/1.5 var(--desk-font);
   padding: 0 20px 20px;
   color-scheme: light;
 }
 .intelligence-desk[data-theme="night"] {
-  --desk-bg: #0d1720;
-  --desk-panel: #14232e;
-  --desk-edge: #304350;
-  --desk-text: #e9f0f6;
-  --desk-muted: #a4b9c9;
+  --desk-bg: #101010;
+  --desk-panel: #181818;
+  --desk-edge: #494949;
+  --desk-text: #f4f4f4;
+  --desk-muted: #bbbbbb;
   --desk-green: #6dd6bb;
   --desk-amber: #f4be75;
-  --desk-soft: #10202b;
-  --desk-hover: #223949;
-  --desk-active: #244658;
-  --desk-accent: #79c9fa;
+  --desk-soft: #202020;
+  --desk-hover: #292929;
+  --desk-active: #392024;
+  --desk-accent: #ff9399;
   color-scheme: dark;
 }
 .intelligence-desk button,
@@ -2476,6 +2473,24 @@ html[data-desk-theme="day"] .desk-hover-card small {
 .desk-region-all[aria-current="page"] { border-color: var(--desk-accent); background: var(--desk-active); text-decoration: none !important; }
 .desk-region-pin { color: var(--desk-accent); font-size: 9px; }
 .desk-region-count { color: var(--desk-muted); font: 10px "JetBrains Mono", monospace; }
+
+/* Readable news-wire text; Courier distinguishes data from prose. */
+.intelligence-desk :is(p, button, input, select, textarea, span, time, a, h1, h2, h3, h4, strong, small, em, summary, dt, dd, th, td, label, .desk-signal-pulse-label, .desk-signal-card-status) { font-family: var(--desk-font); }
+.intelligence-desk :is(
+  time, code, kbd, samp, .desk-clock, .desk-count, .desk-region-count,
+  .desk-flash-rank, .desk-flash-count, .watch-activity, .watch-filters button > span,
+  .locale-callout > small, .regional-stream-filters button > span,
+  .regional-desk-summary strong, .regional-metrics > strong,
+  .regional-satellite-summary > strong, .regional-topic-index h2 > span,
+  .orbital-heading > strong, .orbital-telemetry b, .desk-orbit-metrics b,
+  .desk-signal-latest-time, .desk-signal-watch-metrics strong,
+  td[data-label="Records"], td[data-label="Last success"], td[data-label="Refresh"]
+) { font-family: var(--desk-data-font); font-variant-numeric: tabular-nums; }
+
+.intelligence-desk :is(button, select), .intelligence-desk .desk-main-link { border-radius: 0; }
+.intelligence-desk :is(h1, h2, h3) { font-weight: 700; letter-spacing: normal; }
+.intelligence-desk ::selection { background: var(--desk-active); color: var(--desk-text); }
+.intelligence-desk :is(input, textarea) { caret-color: var(--desk-accent); }
 .desk-region-empty { color: var(--desk-muted); font-size: 11px; white-space: nowrap; }
 .desk-region-all { margin-left: auto; }
 @media (max-width: 700px) {

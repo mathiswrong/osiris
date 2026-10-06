@@ -43,16 +43,23 @@ export default function SatelliteGlobe({
   orbit,
   contextOrbits,
   onSelect,
+  onEarth,
+  initialCenter,
 }: {
   satellites: SatellitePosition[];
   selected: SatellitePosition | null;
   contextOrbits: NonNullable<SatelliteResult["contextOrbits"]>;
   orbit: NonNullable<SatelliteResult["orbit"]>;
   onSelect: (id: string) => void;
+  onEarth?: (center: { lat: number; lng: number }) => void;
+  initialCenter?: { lat: number; lng: number };
 }) {
   const host = useRef<HTMLDivElement>(null),
     engine = useRef<Engine | null>(null),
-    select = useRef(onSelect);
+    select = useRef(onSelect),
+    earthReturn = useRef(onEarth),
+    entryCenter = useRef(initialCenter),
+    checkEarth = useRef<(() => void) | null>(null);
   const [ready, setReady] = useState(0),
     [error, setError] = useState("");
   const [scale, setScale] = useState<"spread" | "true">("spread"),
@@ -78,7 +85,8 @@ export default function SatelliteGlobe({
   );
   useEffect(() => {
     select.current = onSelect;
-  }, [onSelect]);
+    earthReturn.current = onEarth;
+  }, [onSelect, onEarth]);
   useEffect(() => {
     const el = host.current;
     if (!el) return;
@@ -99,14 +107,16 @@ export default function SatelliteGlobe({
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.domElement.setAttribute(
       "aria-label",
-      "Interactive satellite globe. Drag to orbit; use the zoom buttons to change scale. Use the catalogue below for keyboard selection.",
+      earthReturn.current
+        ? "Satellite orbits. Drag to orbit; zoom in to return to Earth. Open the Satellites workspace for keyboard catalogue selection."
+        : "Interactive satellite globe. Drag to orbit; use the zoom buttons to change scale. Use the catalogue below for keyboard selection.",
     );
     el.appendChild(renderer.domElement);
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.enablePan = false;
-    // Keep the document scrollable when the pointer is over the globe.
-    controls.enableZoom = false;
+    // The home canvas owns zoom; the standalone catalogue owns page scrolling.
+    controls.enableZoom = !!earthReturn.current;
     controls.minDistance = 1.12;
     controls.maxDistance = 80;
     controls.autoRotateSpeed = 0.22;
@@ -266,6 +276,18 @@ export default function SatelliteGlobe({
       selected: null,
     };
     engine.current = state;
+    let returning = false;
+    const returnToEarth = () => {
+      if (!earthReturn.current || returning) return;
+      const vertical = camera.fov * Math.PI / 360;
+      const horizontal = Math.atan(Math.tan(vertical) * camera.aspect);
+      if (camera.position.length() > 1.08 / Math.sin(Math.min(vertical, horizontal))) return;
+      returning = true;
+      const direction = camera.position.clone().normalize();
+      earthReturn.current({ lat: Math.asin(direction.y) * 180 / Math.PI, lng: Math.atan2(-direction.z, direction.x) * 180 / Math.PI });
+    };
+    checkEarth.current = returnToEarth;
+    controls.addEventListener("end", returnToEarth);
     const resize = () => {
       const w = el.clientWidth,
         h = el.clientHeight;
@@ -282,6 +304,7 @@ export default function SatelliteGlobe({
     const occlusion = new THREE.Vector3();
     const pick = (event: PointerEvent) => {
       const rect = renderer.domElement.getBoundingClientRect();
+      const frame = el.parentElement!.getBoundingClientRect();
       const x = event.clientX - rect.left,
         y = event.clientY - rect.top;
       ray.setFromCamera(
@@ -302,7 +325,7 @@ export default function SatelliteGlobe({
         ? {
             s,
             x: Math.max(8, Math.min(x + 14, rect.width - 310)),
-            y: Math.max(8, Math.min(y + 12, rect.height - 290)),
+            y: Math.max(8, Math.min(event.clientY - frame.top + 12, frame.height - 290)),
           }
         : null;
     };
@@ -371,6 +394,8 @@ export default function SatelliteGlobe({
       controller.abort();
       cancelAnimationFrame(frame);
       observer.disconnect();
+      controls.removeEventListener("end", returnToEarth);
+      checkEarth.current = null;
       controls.dispose();
       renderer.domElement.removeEventListener("pointermove", move);
       renderer.domElement.removeEventListener("pointerdown", down);
@@ -494,7 +519,7 @@ export default function SatelliteGlobe({
       );
     } else
       e.camera.position
-        .set(3.3, 2.4, 4.9)
+        .fromArray(entryCenter.current ? orbitalVector(entryCenter.current.lat, entryCenter.current.lng, 0) : [3.3, 2.4, 4.9])
         .normalize()
         .multiplyScalar(fleetDistance(e));
     e.controls.update();
@@ -550,6 +575,12 @@ export default function SatelliteGlobe({
           </small>
         </div>
         <div className="orbital-actions">
+          {onEarth && <button onClick={() => {
+            const camera = engine.current?.camera;
+            if (!camera) return;
+            const direction = camera.position.clone().normalize();
+            earthReturn.current?.({ lat: Math.asin(direction.y) * 180 / Math.PI, lng: Math.atan2(-direction.z, direction.x) * 180 / Math.PI });
+          }}>Back to globe</button>}
           <button onClick={() => setRotate((v) => !v)} aria-pressed={rotate}>
             {rotate ? "Pause rotation" : "Rotate globe"}
           </button>
@@ -560,6 +591,7 @@ export default function SatelliteGlobe({
               if (e) {
                 e.camera.position.multiplyScalar(0.8);
                 e.controls.update();
+                checkEarth.current?.();
               }
             }}
           >
@@ -642,8 +674,7 @@ export default function SatelliteGlobe({
           </div>
         )}
         <div className="orbital-hint">
-          Drag to orbit · Use zoom buttons · Hover to identify · Click for mission
-          & clients
+          {onEarth ? "Drag to orbit · Zoom in to return to Earth · Click for dossier" : "Drag to orbit · Use zoom buttons · Hover to identify · Click for mission & clients"}
         </div>
       </div>
       <div className="orbital-legend">

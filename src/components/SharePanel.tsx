@@ -1,4 +1,5 @@
 'use client';
+import { trackKeyEvent } from "@/lib/analytics";
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -36,6 +37,7 @@ export default function SharePanel({ mapView, activeLayers }: SharePanelProps) {
     const url = generateShareUrl();
     try {
       await navigator.clipboard.writeText(url);
+      trackKeyEvent("share", { method: "copy_link", content_type: "map" });
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -44,8 +46,10 @@ export default function SharePanel({ mapView, activeLayers }: SharePanelProps) {
       input.value = url;
       document.body.appendChild(input);
       input.select();
-      document.execCommand('copy');
+      const succeeded = document.execCommand('copy');
       document.body.removeChild(input);
+      if (!succeeded) return;
+      trackKeyEvent("share", { method: "copy_link", content_type: "map" });
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }

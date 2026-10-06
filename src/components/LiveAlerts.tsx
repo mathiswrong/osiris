@@ -12,7 +12,7 @@ import {
   ALERT_KINDS, BLOCS, BLOC_ORDER, buildThreads, groupStatements, timeAgo, type AlertKind, type Bloc, type DigestReport,
 } from '@/lib/alert-digest';
 
-interface SourceHealth { handle: string; name: string; lean: string; bloc: Bloc; kind?: 'telegram' | 'wire'; count: number; latest: string | null }
+interface SourceHealth { handle: string; name: string; lean: string; bloc: Bloc | null; kind?: 'telegram' | 'wire'; count: number; latest: string | null }
 
 /** The slice of dashboard state this panel reads. */
 interface LiveAlertsData {
@@ -388,7 +388,7 @@ function NewsCard({ item, now, open, wide, onToggle, onLocate }: {
           )}
           {item.reply_to && <Chip><CornerDownRight className="w-2 h-2" /> reply</Chip>}
           {item.keywords.slice(0, 2).map(k => (
-            <Chip key={k} color="#FF9500" title="Matched by the conflict-keyword filter — a word match, not an assessment">{k}</Chip>
+            <Chip key={k} color="#FF9500" title="Matched by the reporting keyword filter — a word match, not an assessment">{k}</Chip>
           ))}
           {item.views != null && (
             <span className="ml-auto inline-flex items-center gap-0.5 text-[8.5px] font-mono text-[#5C5A54]" title={`${item.views.toLocaleString()} views`}>

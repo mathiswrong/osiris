@@ -40,7 +40,7 @@ export interface AlertPlace {
 
 /* Whole English words ("grad" is not "gradually"); the Russian stem takes any ending. */
 const ROCKET_RX = /(?<![\p{L}\p{N}])(?:(?:rockets?|missiles?|ballistic|barrages?|salvos?|iskanders?|kinzhals?|kalibrs?|katyushas?|grad|mlrs|himars|atacms|storm shadow)(?![\p{L}\p{N}])|ракет)/iu;
-const EVENT_TOPICS = new Set(['strikes', 'drones', 'air-defence', 'ground', 'casualties']);
+const EVENT_TOPICS = new Set(['strikes', 'drones', 'air-defence', 'ground', 'casualties', 'health']);
 const EVENT_RX = /(?<![\p{L}\p{N}])(?:attack(?:s|ed)?|raid(?:s|ed)?|clash(?:es|ed)?|shooting|gunfire|explosions?|blasts?|arrest(?:s|ed)?|set fire|arson|vandali[sz]ed|stormed|demolish(?:ed)?|evacuat(?:e|ed|ion))(?![\p{L}\p{N}])/iu;
 
 /**

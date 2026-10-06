@@ -25,6 +25,7 @@ export interface Development {
   reason: string;
   priority: number;
   summary: string;
+  excerpt?: string;
   location?: { lat: number; lng: number; precision: "provider observation" | "activation centroid" | "volcano location" };
 }
 export interface SourceResult<T = Development> {
@@ -55,6 +56,40 @@ export interface SatelliteResult extends SourceResult<SatellitePosition> {
     points: { lat: number; lng: number; altKm: number; at: string }[];
   }[];
 }
+// Shared by the monitor and Live Alerts so coverage does not depend on the workspace.
+export const ADDITIONAL_REPORTING_SOURCES = [
+  {
+    id: "cbs", name: "CBS World", url: "https://www.cbsnews.com/latest/rss/world",
+    refreshMs: 300_000, coverage: "World reporting · publisher RSS, including emerging health incidents",
+    lean: "US newsroom", bloc: "western",
+  },
+  {
+    id: "euronews", name: "Euronews", url: "https://www.euronews.com/rss",
+    refreshMs: 300_000, coverage: "European and international reporting · publisher RSS",
+    lean: "European newsroom", bloc: "western",
+  },
+  {
+    id: "meduza", name: "Meduza English", url: "https://meduza.io/rss/en/all",
+    refreshMs: 300_000, coverage: "Independent Russian newsroom · English reporting and analysis",
+    lean: "Independent Russian newsroom", bloc: null,
+  },
+  {
+    id: "moscow-times", name: "The Moscow Times", url: "https://www.themoscowtimes.com/rss/news",
+    refreshMs: 300_000, coverage: "Independent Russian newsroom · English news, including regional incidents",
+    lean: "Independent Russian newsroom", bloc: null,
+  },
+  {
+    id: "ecdc", name: "ECDC Epidemiological Updates", url: "https://www.ecdc.europa.eu/en/taxonomy/term/1310/feed",
+    refreshMs: 15 * 60_000, coverage: "Official European disease assessments · publication updates, not real-time case counts",
+    lean: "EU public health agency", bloc: null,
+  },
+  {
+    id: "who-don", name: "WHO Disease Outbreak News",
+    url: "https://www.who.int/api/hubs/diseaseoutbreaknews?$orderby=PublicationDateAndTime%20desc&$top=50&$select=Id,Title,PublicationDateAndTime,ItemDefaultUrl,Summary",
+    refreshMs: 15 * 60_000, coverage: "Official reports of confirmed or potential health events · past 30 days · not exhaustive surveillance",
+    lean: "International public health agency", bloc: null,
+  },
+] as const;
 export const SOURCE_DEFINITIONS = [
   {
     id: "usgs",
@@ -192,6 +227,7 @@ export const SOURCE_DEFINITIONS = [
     coverage: "Published internet interference findings · curated, not live telemetry",
     refreshMs: 6 * 60 * 60_000,
   },
+  ...ADDITIONAL_REPORTING_SOURCES,
 ] as const;
 export const SATELLITE_SOURCE = {
   id: "celestrak-active",

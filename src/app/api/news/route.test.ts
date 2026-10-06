@@ -31,6 +31,11 @@ describe('scoreRisk', () => {
       .toEqual(expect.arrayContaining(['drone', 'attack', 'strike']));
     expect(scoreRisk('Civilian casualties reported').matched).toEqual(['casualty']);
   });
+
+  it('shows the health terms matched in a suspected outbreak report', () => {
+    expect(scoreRisk('A plague lab worker died of pneumonia; contacts were quarantined.').matched)
+      .toEqual(expect.arrayContaining(['plague', 'pneumonia', 'quarantine']));
+  });
 });
 
 describe('findCoords', () => {
@@ -72,11 +77,20 @@ describe('recentPosts', () => {
     expect(recentPosts(posts, now).map(p => p.id)).toEqual(['a/2', 'a/3']);
   });
 
-  it('keeps only the newest posts per channel', () => {
-    const posts = Array.from({ length: 12 }, (_, i) => post(`a/${i}`, `Post ${i}`, new Date(now - (12 - i) * 60_000).toISOString()));
+  it('retains reports beyond the former eight-item sample, newest last regardless of feed order', () => {
+    const posts = Array.from({ length: 12 }, (_, i) => post(`a/${i}`, `Post ${i}`, new Date(now - (12 - i) * 60_000).toISOString())).reverse();
     const kept = recentPosts(posts, now);
-    expect(kept).toHaveLength(8);
+    expect(kept).toHaveLength(12);
     expect(kept.at(-1)?.id).toBe('a/11');
+  });
+
+  it('drops future posts and caps only the oldest items in a large current feed', () => {
+    const posts = Array.from({ length: 110 }, (_, i) => post(`a/${i}`, `Post ${i}`, new Date(now - (110 - i) * 60_000).toISOString()));
+    posts.push(post('a/future', 'Future report', new Date(now + 60_000).toISOString()));
+    const kept = recentPosts(posts, now);
+    expect(kept).toHaveLength(100);
+    expect(kept[0].id).toBe('a/10');
+    expect(kept.at(-1)?.id).toBe('a/109');
   });
 });
 
@@ -158,5 +172,7 @@ describe('sourceRef', () => {
     expect(sourceRef({ handle: 'QudsNen', name: 'Quds News Network', lean: '', bloc: 'regional' })).toBe('t.me/QudsNen');
     expect(sourceRef({ handle: 'bbc', name: 'BBC World', lean: '', bloc: 'western' })).toBe('feeds.bbci.co.uk');
     expect(sourceRef({ handle: 'tass', name: 'TASS', lean: '', bloc: 'russian' })).toBe('tass.com');
+    expect(sourceRef({ handle: 'who-don', name: 'WHO', lean: '', bloc: null })).toBe('who.int');
+    expect(sourceRef({ handle: 'meduza', name: 'Meduza', lean: '', bloc: null })).toBe('meduza.io');
   });
 });

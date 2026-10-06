@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { Map, ProjectionSpecification } from 'maplibre-gl';
 
-import { applyMapProjection, GLOBE_PROJECTION, TERRAIN_GLOBE_PROJECTION } from './map-projection';
+import { applyMapProjection, explorationView, GLOBE_PROJECTION, TERRAIN_GLOBE_PROJECTION } from './map-projection';
 import { TERRAIN_MIN_ZOOM } from './map-terrain';
 
 function fixture(initial?: ProjectionSpecification) {
@@ -61,4 +61,15 @@ describe('map projection', () => {
     expect(applyMapProjection(map, 'globe')).toBe(true);
     expect(set).toHaveBeenCalledTimes(2);
   });
+});
+
+it('moves through map, globe and satellites at viewport-relative scales and reverses', () => {
+  for (const mapZoom of [-0.5, 1.2]) {
+    const globeZoom = mapZoom + 1;
+    expect(explorationView(mapZoom, 'map', mapZoom, globeZoom)).toBe('map');
+    expect(explorationView(mapZoom - 1, 'map', mapZoom, globeZoom)).toBe('globe');
+    expect(explorationView(globeZoom, 'globe', mapZoom, globeZoom)).toBe('globe');
+    expect(explorationView(globeZoom - 1, 'globe', mapZoom, globeZoom)).toBe('satellites');
+    expect(explorationView(globeZoom + 1, 'globe', mapZoom, globeZoom)).toBe('map');
+  }
 });

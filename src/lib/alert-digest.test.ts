@@ -16,6 +16,12 @@ const report = (title: string, extra: Partial<DigestReport> = {}): DigestReport 
 });
 
 describe('classify', () => {
+  it('recognizes city-level health reporting in the digest without assigning it a war label', () => {
+    expect(classify({ title: 'Irkutsk lab worker dies of pneumonia of unknown origin' }))
+      .toMatchObject({ theatres: ['russia-ukraine'], topics: ['health'] });
+    expect(buildThreads([report('Shelekhov hospital quarantined after suspected plague')])[0])
+      .toMatchObject({ label: 'Russia & Ukraine', topics: ['public health'] });
+  });
   it('files a report under every theatre and topic it names', () => {
     const c = classify({ title: 'Iranian drones struck a tanker in the Strait of Hormuz; Israel on alert' });
     expect(c.theatres).toEqual(expect.arrayContaining(['iran-gulf', 'israel-gaza-lebanon']));
@@ -108,13 +114,13 @@ describe('buildAlertBrief', () => {
     }, NOW);
 
     expect(brief.bottomLine).toBe(
-      'Russia–Ukraine war leads the feed: 2 reports from 2 channels, carried by both Western and Russian-aligned channels.'
+      'Russia & Ukraine leads the feed: 2 reports from 2 channels, carried by both Western and Russian-aligned channels.'
       + ' Also active: Yemen & Red Sea (1). Strongest quake: M6.2 80 km S of Kuril.',
     );
     expect(brief.coverage).toMatchObject({ reports: 3, breaking: 1, corroborated: 1 });
     expect(brief.seismic).toMatchObject({ count: 2, significant: 1, strongest: { magnitude: 6.2, tsunami: true } });
     expect(brief.facts.some(f => f.includes('tsunami flag set'))).toBe(true);
-    expect(brief.highlights).toEqual(['Russia–Ukraine war · 2', 'Yemen & Red Sea · 1', 'M6.2 quake', '1 breaking']);
+    expect(brief.highlights).toEqual(['Russia & Ukraine · 2', 'Yemen & Red Sea · 1', 'M6.2 quake', '1 breaking']);
     expect(brief.method).toMatch(/does not verify/);
   });
 

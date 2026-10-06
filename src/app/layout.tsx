@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import "./globals.css";
 export const viewport: Viewport = {
   themeColor: "#edf2f6",
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
   title: "KNUCKLETAT | open source intel dashboard",
   description: "aggregated open source intel",
   applicationName: "KNUCKLETAT",
+  verification: { google: process.env.GOOGLE_SITE_VERIFICATION },
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -52,6 +54,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ErrorBoundary name="Intelligence workspace">{children}</ErrorBoundary>
+        <GoogleAnalytics measurementId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
       </body>
     </html>
   );

@@ -1,0 +1,674 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-06T05:04:27.818956Z",
+  "title": "Design System: KNUCKLETAT",
+  "extensions": {
+    "colorMeta": {
+      "desk-bg": {
+        "role": "neutral",
+        "displayName": "White Canvas",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0.00)",
+          "oklch(26.43% 0.00000 0.00)",
+          "oklch(37.86% 0.00000 0.00)",
+          "oklch(49.29% 0.00000 0.00)",
+          "oklch(60.71% 0.00000 0.00)",
+          "oklch(72.14% 0.00000 0.00)",
+          "oklch(83.57% 0.00000 0.00)",
+          "oklch(95.00% 0.00000 0.00)"
+        ]
+      },
+      "desk-panel": {
+        "role": "neutral",
+        "displayName": "White Panel",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0.00)",
+          "oklch(26.43% 0.00000 0.00)",
+          "oklch(37.86% 0.00000 0.00)",
+          "oklch(49.29% 0.00000 0.00)",
+          "oklch(60.71% 0.00000 0.00)",
+          "oklch(72.14% 0.00000 0.00)",
+          "oklch(83.57% 0.00000 0.00)",
+          "oklch(95.00% 0.00000 0.00)"
+        ]
+      },
+      "desk-edge": {
+        "role": "neutral",
+        "displayName": "Day Divider",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0.00)",
+          "oklch(26.43% 0.00000 0.00)",
+          "oklch(37.86% 0.00000 0.00)",
+          "oklch(49.29% 0.00000 0.00)",
+          "oklch(60.71% 0.00000 0.00)",
+          "oklch(72.14% 0.00000 0.00)",
+          "oklch(83.57% 0.00000 0.00)",
+          "oklch(95.00% 0.00000 0.00)"
+        ]
+      },
+      "desk-text": {
+        "role": "neutral",
+        "displayName": "News-Wire Ink",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0.00)",
+          "oklch(26.43% 0.00000 0.00)",
+          "oklch(37.86% 0.00000 0.00)",
+          "oklch(49.29% 0.00000 0.00)",
+          "oklch(60.71% 0.00000 0.00)",
+          "oklch(72.14% 0.00000 0.00)",
+          "oklch(83.57% 0.00000 0.00)",
+          "oklch(95.00% 0.00000 0.00)"
+        ]
+      },
+      "desk-muted": {
+        "role": "neutral",
+        "displayName": "Day Muted",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0.00)",
+          "oklch(26.43% 0.00000 0.00)",
+          "oklch(37.86% 0.00000 0.00)",
+          "oklch(49.29% 0.00000 0.00)",
+          "oklch(60.71% 0.00000 0.00)",
+          "oklch(72.14% 0.00000 0.00)",
+          "oklch(83.57% 0.00000 0.00)",
+          "oklch(95.00% 0.00000 0.00)"
+        ]
+      },
+      "desk-soft": {
+        "role": "neutral",
+        "displayName": "Day Soft Surface",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0.00)",
+          "oklch(26.43% 0.00000 0.00)",
+          "oklch(37.86% 0.00000 0.00)",
+          "oklch(49.29% 0.00000 0.00)",
+          "oklch(60.71% 0.00000 0.00)",
+          "oklch(72.14% 0.00000 0.00)",
+          "oklch(83.57% 0.00000 0.00)",
+          "oklch(95.00% 0.00000 0.00)"
+        ]
+      },
+      "desk-hover": {
+        "role": "neutral",
+        "displayName": "Day Hover",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0.00)",
+          "oklch(26.43% 0.00000 0.00)",
+          "oklch(37.86% 0.00000 0.00)",
+          "oklch(49.29% 0.00000 0.00)",
+          "oklch(60.71% 0.00000 0.00)",
+          "oklch(72.14% 0.00000 0.00)",
+          "oklch(83.57% 0.00000 0.00)",
+          "oklch(95.00% 0.00000 0.00)"
+        ]
+      },
+      "desk-active": {
+        "role": "neutral",
+        "displayName": "Pale Red Selection",
+        "tonalRamp": [
+          "oklch(15.00% 0.01741 13.10)",
+          "oklch(26.43% 0.01741 13.10)",
+          "oklch(37.86% 0.01741 13.10)",
+          "oklch(49.29% 0.01741 13.10)",
+          "oklch(60.71% 0.01741 13.10)",
+          "oklch(72.14% 0.01741 13.10)",
+          "oklch(83.57% 0.01741 13.10)",
+          "oklch(95.00% 0.01741 13.10)"
+        ]
+      },
+      "desk-accent": {
+        "role": "primary",
+        "displayName": "News-Wire Red",
+        "tonalRamp": [
+          "oklch(15.00% 0.17645 24.10)",
+          "oklch(26.43% 0.17645 24.10)",
+          "oklch(37.86% 0.17645 24.10)",
+          "oklch(49.29% 0.17645 24.10)",
+          "oklch(60.71% 0.17645 24.10)",
+          "oklch(72.14% 0.17645 24.10)",
+          "oklch(83.57% 0.17645 24.10)",
+          "oklch(95.00% 0.17645 24.10)"
+        ]
+      },
+      "desk-green": {
+        "role": "secondary",
+        "displayName": "Observation Teal",
+        "tonalRamp": [
+          "oklch(15.00% 0.09013 182.70)",
+          "oklch(26.43% 0.09013 182.70)",
+          "oklch(37.86% 0.09013 182.70)",
+          "oklch(49.29% 0.09013 182.70)",
+          "oklch(60.71% 0.09013 182.70)",
+          "oklch(72.14% 0.09013 182.70)",
+          "oklch(83.57% 0.09013 182.70)",
+          "oklch(95.00% 0.09013 182.70)"
+        ]
+      },
+      "desk-amber": {
+        "role": "secondary",
+        "displayName": "Warning Amber",
+        "tonalRamp": [
+          "oklch(15.00% 0.12671 57.52)",
+          "oklch(26.43% 0.12671 57.52)",
+          "oklch(37.86% 0.12671 57.52)",
+          "oklch(49.29% 0.12671 57.52)",
+          "oklch(60.71% 0.12671 57.52)",
+          "oklch(72.14% 0.12671 57.52)",
+          "oklch(83.57% 0.12671 57.52)",
+          "oklch(95.00% 0.12671 57.52)"
+        ]
+      },
+      "night-bg": {
+        "role": "neutral",
+        "displayName": "Charcoal Canvas",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0.00)",
+          "oklch(26.43% 0.00000 0.00)",
+          "oklch(37.86% 0.00000 0.00)",
+          "oklch(49.29% 0.00000 0.00)",
+          "oklch(60.71% 0.00000 0.00)",
+          "oklch(72.14% 0.00000 0.00)",
+          "oklch(83.57% 0.00000 0.00)",
+          "oklch(95.00% 0.00000 0.00)"
+        ]
+      },
+      "night-panel": {
+        "role": "neutral",
+        "displayName": "Raised Charcoal Panel",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0.00)",
+          "oklch(26.43% 0.00000 0.00)",
+          "oklch(37.86% 0.00000 0.00)",
+          "oklch(49.29% 0.00000 0.00)",
+          "oklch(60.71% 0.00000 0.00)",
+          "oklch(72.14% 0.00000 0.00)",
+          "oklch(83.57% 0.00000 0.00)",
+          "oklch(95.00% 0.00000 0.00)"
+        ]
+      },
+      "night-edge": {
+        "role": "neutral",
+        "displayName": "Night Divider",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0.00)",
+          "oklch(26.43% 0.00000 0.00)",
+          "oklch(37.86% 0.00000 0.00)",
+          "oklch(49.29% 0.00000 0.00)",
+          "oklch(60.71% 0.00000 0.00)",
+          "oklch(72.14% 0.00000 0.00)",
+          "oklch(83.57% 0.00000 0.00)",
+          "oklch(95.00% 0.00000 0.00)"
+        ]
+      },
+      "night-text": {
+        "role": "neutral",
+        "displayName": "Night Text",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0.00)",
+          "oklch(26.43% 0.00000 0.00)",
+          "oklch(37.86% 0.00000 0.00)",
+          "oklch(49.29% 0.00000 0.00)",
+          "oklch(60.71% 0.00000 0.00)",
+          "oklch(72.14% 0.00000 0.00)",
+          "oklch(83.57% 0.00000 0.00)",
+          "oklch(95.00% 0.00000 0.00)"
+        ]
+      },
+      "night-muted": {
+        "role": "neutral",
+        "displayName": "Night Muted",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0.00)",
+          "oklch(26.43% 0.00000 0.00)",
+          "oklch(37.86% 0.00000 0.00)",
+          "oklch(49.29% 0.00000 0.00)",
+          "oklch(60.71% 0.00000 0.00)",
+          "oklch(72.14% 0.00000 0.00)",
+          "oklch(83.57% 0.00000 0.00)",
+          "oklch(95.00% 0.00000 0.00)"
+        ]
+      },
+      "night-soft": {
+        "role": "neutral",
+        "displayName": "Night Soft Surface",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0.00)",
+          "oklch(26.43% 0.00000 0.00)",
+          "oklch(37.86% 0.00000 0.00)",
+          "oklch(49.29% 0.00000 0.00)",
+          "oklch(60.71% 0.00000 0.00)",
+          "oklch(72.14% 0.00000 0.00)",
+          "oklch(83.57% 0.00000 0.00)",
+          "oklch(95.00% 0.00000 0.00)"
+        ]
+      },
+      "night-hover": {
+        "role": "neutral",
+        "displayName": "Night Hover",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0.00)",
+          "oklch(26.43% 0.00000 0.00)",
+          "oklch(37.86% 0.00000 0.00)",
+          "oklch(49.29% 0.00000 0.00)",
+          "oklch(60.71% 0.00000 0.00)",
+          "oklch(72.14% 0.00000 0.00)",
+          "oklch(83.57% 0.00000 0.00)",
+          "oklch(95.00% 0.00000 0.00)"
+        ]
+      },
+      "night-active": {
+        "role": "neutral",
+        "displayName": "Night Red Selection",
+        "tonalRamp": [
+          "oklch(15.00% 0.03915 9.54)",
+          "oklch(26.43% 0.03915 9.54)",
+          "oklch(37.86% 0.03915 9.54)",
+          "oklch(49.29% 0.03915 9.54)",
+          "oklch(60.71% 0.03915 9.54)",
+          "oklch(72.14% 0.03915 9.54)",
+          "oklch(83.57% 0.03915 9.54)",
+          "oklch(95.00% 0.03915 9.54)"
+        ]
+      },
+      "night-accent": {
+        "role": "primary",
+        "displayName": "Night Red",
+        "tonalRamp": [
+          "oklch(15.00% 0.13012 16.97)",
+          "oklch(26.43% 0.13012 16.97)",
+          "oklch(37.86% 0.13012 16.97)",
+          "oklch(49.29% 0.13012 16.97)",
+          "oklch(60.71% 0.13012 16.97)",
+          "oklch(72.14% 0.13012 16.97)",
+          "oklch(83.57% 0.13012 16.97)",
+          "oklch(95.00% 0.13012 16.97)"
+        ]
+      },
+      "night-green": {
+        "role": "secondary",
+        "displayName": "Night Observation Teal",
+        "tonalRamp": [
+          "oklch(15.00% 0.10607 174.58)",
+          "oklch(26.43% 0.10607 174.58)",
+          "oklch(37.86% 0.10607 174.58)",
+          "oklch(49.29% 0.10607 174.58)",
+          "oklch(60.71% 0.10607 174.58)",
+          "oklch(72.14% 0.10607 174.58)",
+          "oklch(83.57% 0.10607 174.58)",
+          "oklch(95.00% 0.10607 174.58)"
+        ]
+      },
+      "night-amber": {
+        "role": "secondary",
+        "displayName": "Night Warning Amber",
+        "tonalRamp": [
+          "oklch(15.00% 0.10990 73.70)",
+          "oklch(26.43% 0.10990 73.70)",
+          "oklch(37.86% 0.10990 73.70)",
+          "oklch(49.29% 0.10990 73.70)",
+          "oklch(60.71% 0.10990 73.70)",
+          "oklch(72.14% 0.10990 73.70)",
+          "oklch(83.57% 0.10990 73.70)",
+          "oklch(95.00% 0.10990 73.70)"
+        ]
+      },
+      "watch-emerging": {
+        "role": "secondary",
+        "displayName": "Emerging Red",
+        "tonalRamp": [
+          "oklch(15.00% 0.17645 24.10)",
+          "oklch(26.43% 0.17645 24.10)",
+          "oklch(37.86% 0.17645 24.10)",
+          "oklch(49.29% 0.17645 24.10)",
+          "oklch(60.71% 0.17645 24.10)",
+          "oklch(72.14% 0.17645 24.10)",
+          "oklch(83.57% 0.17645 24.10)",
+          "oklch(95.00% 0.17645 24.10)"
+        ]
+      },
+      "watch-early": {
+        "role": "secondary",
+        "displayName": "Early Brown",
+        "tonalRamp": [
+          "oklch(15.00% 0.03336 61.67)",
+          "oklch(26.43% 0.03336 61.67)",
+          "oklch(37.86% 0.03336 61.67)",
+          "oklch(49.29% 0.03336 61.67)",
+          "oklch(60.71% 0.03336 61.67)",
+          "oklch(72.14% 0.03336 61.67)",
+          "oklch(83.57% 0.03336 61.67)",
+          "oklch(95.00% 0.03336 61.67)"
+        ]
+      },
+      "watch-multiple": {
+        "role": "secondary",
+        "displayName": "Multi-Source Burnt Orange",
+        "tonalRamp": [
+          "oklch(15.00% 0.11038 49.65)",
+          "oklch(26.43% 0.11038 49.65)",
+          "oklch(37.86% 0.11038 49.65)",
+          "oklch(49.29% 0.11038 49.65)",
+          "oklch(60.71% 0.11038 49.65)",
+          "oklch(72.14% 0.11038 49.65)",
+          "oklch(83.57% 0.11038 49.65)",
+          "oklch(95.00% 0.11038 49.65)"
+        ]
+      },
+      "watch-verified": {
+        "role": "secondary",
+        "displayName": "Verified Observation Teal",
+        "tonalRamp": [
+          "oklch(15.00% 0.09013 182.70)",
+          "oklch(26.43% 0.09013 182.70)",
+          "oklch(37.86% 0.09013 182.70)",
+          "oklch(49.29% 0.09013 182.70)",
+          "oklch(60.71% 0.09013 182.70)",
+          "oklch(72.14% 0.09013 182.70)",
+          "oklch(83.57% 0.09013 182.70)",
+          "oklch(95.00% 0.09013 182.70)"
+        ]
+      },
+      "watch-long-term": {
+        "role": "secondary",
+        "displayName": "Long-Term Grey",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0.00)",
+          "oklch(26.43% 0.00000 0.00)",
+          "oklch(37.86% 0.00000 0.00)",
+          "oklch(49.29% 0.00000 0.00)",
+          "oklch(60.71% 0.00000 0.00)",
+          "oklch(72.14% 0.00000 0.00)",
+          "oklch(83.57% 0.00000 0.00)",
+          "oklch(95.00% 0.00000 0.00)"
+        ]
+      },
+      "activity-low": {
+        "role": "secondary",
+        "displayName": "Low-Volume Amber",
+        "tonalRamp": [
+          "oklch(15.00% 0.08268 71.93)",
+          "oklch(26.43% 0.08268 71.93)",
+          "oklch(37.86% 0.08268 71.93)",
+          "oklch(49.29% 0.08268 71.93)",
+          "oklch(60.71% 0.08268 71.93)",
+          "oklch(72.14% 0.08268 71.93)",
+          "oklch(83.57% 0.08268 71.93)",
+          "oklch(95.00% 0.08268 71.93)"
+        ]
+      },
+      "activity-active": {
+        "role": "secondary",
+        "displayName": "Active Burnt Orange",
+        "tonalRamp": [
+          "oklch(15.00% 0.13806 41.69)",
+          "oklch(26.43% 0.13806 41.69)",
+          "oklch(37.86% 0.13806 41.69)",
+          "oklch(49.29% 0.13806 41.69)",
+          "oklch(60.71% 0.13806 41.69)",
+          "oklch(72.14% 0.13806 41.69)",
+          "oklch(83.57% 0.13806 41.69)",
+          "oklch(95.00% 0.13806 41.69)"
+        ]
+      },
+      "activity-high": {
+        "role": "secondary",
+        "displayName": "High-Attention Red",
+        "tonalRamp": [
+          "oklch(15.00% 0.17645 24.10)",
+          "oklch(26.43% 0.17645 24.10)",
+          "oklch(37.86% 0.17645 24.10)",
+          "oklch(49.29% 0.17645 24.10)",
+          "oklch(60.71% 0.17645 24.10)",
+          "oklch(72.14% 0.17645 24.10)",
+          "oklch(83.57% 0.17645 24.10)",
+          "oklch(95.00% 0.17645 24.10)"
+        ]
+      },
+      "night-activity-low": {
+        "role": "secondary",
+        "displayName": "Night Low-Volume Amber",
+        "tonalRamp": [
+          "oklch(15.00% 0.05930 76.18)",
+          "oklch(26.43% 0.05930 76.18)",
+          "oklch(37.86% 0.05930 76.18)",
+          "oklch(49.29% 0.05930 76.18)",
+          "oklch(60.71% 0.05930 76.18)",
+          "oklch(72.14% 0.05930 76.18)",
+          "oklch(83.57% 0.05930 76.18)",
+          "oklch(95.00% 0.05930 76.18)"
+        ]
+      },
+      "night-activity-active": {
+        "role": "secondary",
+        "displayName": "Night Active Burnt Orange",
+        "tonalRamp": [
+          "oklch(15.00% 0.10493 51.47)",
+          "oklch(26.43% 0.10493 51.47)",
+          "oklch(37.86% 0.10493 51.47)",
+          "oklch(49.29% 0.10493 51.47)",
+          "oklch(60.71% 0.10493 51.47)",
+          "oklch(72.14% 0.10493 51.47)",
+          "oklch(83.57% 0.10493 51.47)",
+          "oklch(95.00% 0.10493 51.47)"
+        ]
+      },
+      "night-activity-high": {
+        "role": "secondary",
+        "displayName": "Night High-Attention Red",
+        "tonalRamp": [
+          "oklch(15.00% 0.13012 16.97)",
+          "oklch(26.43% 0.13012 16.97)",
+          "oklch(37.86% 0.13012 16.97)",
+          "oklch(49.29% 0.13012 16.97)",
+          "oklch(60.71% 0.13012 16.97)",
+          "oklch(72.14% 0.13012 16.97)",
+          "oklch(83.57% 0.13012 16.97)",
+          "oklch(95.00% 0.13012 16.97)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Regional Name",
+        "purpose": "Regional identity heading."
+      },
+      "headline": {
+        "displayName": "Workspace Headline",
+        "purpose": "Globe workspace title."
+      },
+      "title": {
+        "displayName": "Evidence Title",
+        "purpose": "Attributed report headlines."
+      },
+      "body": {
+        "displayName": "Desk Reading",
+        "purpose": "Shared reading text."
+      },
+      "label": {
+        "displayName": "Interface Label",
+        "purpose": "Compact Inter interface labels; time data uses the separate Courier role."
+      },
+      "metadata": {
+        "displayName": "Source Context",
+        "purpose": "Source attribution and explanations."
+      },
+      "watch-tag": {
+        "displayName": "Watch Status",
+        "purpose": "Bold labeled watch status, separate from reporting attention."
+      },
+      "data": {
+        "displayName": "Data",
+        "purpose": "Native Courier with tabular numerals for timestamps, clocks, counts, metrics, telemetry, count-bearing activity rows, and numeric source-health cells. Size follows each component."
+      }
+    },
+    "shadows": [
+      {
+        "name": "detached-preview-day",
+        "value": "0 8px 30px #213e5c24",
+        "purpose": "Existing detached evidence preview in day mode; ordinary regional cards remain flat."
+      },
+      {
+        "name": "detached-preview-night",
+        "value": "0 10px 40px #0009",
+        "purpose": "Existing detached evidence preview in night mode."
+      }
+    ],
+    "motion": [
+      {
+        "name": "theme-transition",
+        "value": "0.6s cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Existing global color, border, background, and shadow transitions."
+      },
+      {
+        "name": "regional-map-fit",
+        "value": "500ms",
+        "purpose": "Regional bounds fitting and reset; zero duration with reduced motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "regional-stack",
+        "value": "900px"
+      },
+      {
+        "name": "compact-globe-and-stream",
+        "value": "600px"
+      },
+      {
+        "name": "compact-workspace-navigation",
+        "value": "700px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Desk Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Compact shared action control.",
+      "html": "<button class=\"ds-button\">Show more records</button>",
+      "css": ".ds-button{font:14px/1.5 Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;background:#f6f6f6;color:#171717;border:1px solid #cccccc;border-radius:0;padding:6px 9px;cursor:pointer;transition:background-color .6s cubic-bezier(.16,1,.3,1),border-color .6s cubic-bezier(.16,1,.3,1),color .6s cubic-bezier(.16,1,.3,1),box-shadow .6s cubic-bezier(.16,1,.3,1);}.ds-button:hover{background:#f1f1f1;}.ds-button[aria-pressed=\"true\"]{color:#a81824;background:#fceced;border-color:#a81824;}.ds-button:disabled{opacity:.55;cursor:wait;}.ds-button:focus-visible{outline:2px solid #a81824;outline-offset:2px;}"
+    },
+    {
+      "name": "Selected Desk Button",
+      "kind": "button",
+      "refersTo": "button-selected",
+      "description": "Shared pressed state for filters and saved actions.",
+      "html": "<button class=\"ds-button-selected\" aria-pressed=\"true\">Saved</button>",
+      "css": ".ds-button-selected{font:14px/1.5 Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;background:#fceced;color:#a81824;border:1px solid #a81824;border-radius:0;padding:6px 9px;cursor:pointer;transition:background-color .6s cubic-bezier(.16,1,.3,1),border-color .6s cubic-bezier(.16,1,.3,1),color .6s cubic-bezier(.16,1,.3,1),box-shadow .6s cubic-bezier(.16,1,.3,1);}.ds-button-selected:hover{background:#fceced;}.ds-button-selected:focus-visible{outline:2px solid #a81824;outline-offset:2px;}"
+    },
+    {
+      "name": "Workspace Navigation",
+      "kind": "nav",
+      "refersTo": "workspace-navigation",
+      "description": "Primary workspace buttons; active state reverses ink and panel colors.",
+      "html": "<nav class=\"ds-navigation\" aria-label=\"Workspace\"><button>Globe</button><button aria-pressed=\"true\">My desk</button><button>Sources</button></nav>",
+      "css": ".ds-navigation{display:flex;align-items:center;gap:6px;padding:11px 0;flex-wrap:wrap;}.ds-navigation button{font:13px/1.5 Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;background:#f6f6f6;color:#171717;border:1px solid #cccccc;border-radius:0;padding:8px 13px;cursor:pointer;transition:background-color .6s cubic-bezier(.16,1,.3,1),border-color .6s cubic-bezier(.16,1,.3,1),color .6s cubic-bezier(.16,1,.3,1),box-shadow .6s cubic-bezier(.16,1,.3,1);}.ds-navigation button:hover{background:#f1f1f1;}.ds-navigation button[aria-pressed=\"true\"]{background:#171717;color:#fff;border-color:#171717;}.ds-navigation button:focus-visible{outline:2px solid #a81824;outline-offset:2px;}"
+    },
+    {
+      "name": "Regional Search",
+      "kind": "input",
+      "refersTo": "desk-search",
+      "description": "Search field for report titles, topics, and source names.",
+      "html": "<label class=\"ds-search\">Search this desk<input placeholder=\"Topic, headline, or source\u2026\" /></label>",
+      "css": ".ds-search{display:flex;align-items:center;gap:8px;color:#595959;font:11px/1.5 Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;flex-wrap:wrap;}.ds-search input{font:11px/1.5 Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;color:#171717;background:#fff;border:1px solid #cccccc;border-radius:0;padding:7px 9px;max-width:100%;width:230px;caret-color:#a81824;transition:background-color .6s cubic-bezier(.16,1,.3,1),border-color .6s cubic-bezier(.16,1,.3,1),color .6s cubic-bezier(.16,1,.3,1),box-shadow .6s cubic-bezier(.16,1,.3,1);}.ds-search input::placeholder{color:#595959;}.ds-search input:focus-visible{outline:2px solid #a81824;outline-offset:2px;}"
+    },
+    {
+      "name": "Watch Filter",
+      "kind": "chip",
+      "refersTo": "watch-filter",
+      "description": "Readable status filter with a matching dot and count.",
+      "html": "<button class=\"ds-watch-filter\" aria-pressed=\"true\"><i aria-hidden=\"true\"></i>Multi-source<span>Count</span></button>",
+      "css": ".ds-watch-filter{display:inline-flex;align-items:center;gap:7px;font:12px/1.5 Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;padding:7px 10px;background:#fff;color:#171717;border:1px solid #cccccc;border-radius:0;cursor:pointer;transition:background-color .6s cubic-bezier(.16,1,.3,1),border-color .6s cubic-bezier(.16,1,.3,1),color .6s cubic-bezier(.16,1,.3,1),box-shadow .6s cubic-bezier(.16,1,.3,1);}.ds-watch-filter i{width:7px;height:7px;border-radius:50%;background:#8e481b;}.ds-watch-filter span{font-family:\"Courier New\", Courier, monospace;color:#595959;font-variant-numeric:tabular-nums;}.ds-watch-filter:hover{background:#f1f1f1;}.ds-watch-filter[aria-pressed=\"true\"]{border-color:#8e481b;color:#171717;background:color-mix(in srgb,#8e481b 10%,#fff);}.ds-watch-filter:focus-visible{outline:2px solid #a81824;outline-offset:2px;}"
+    },
+    {
+      "name": "Watch Tag",
+      "kind": "chip",
+      "refersTo": "watch-tag",
+      "description": "A labeled status tag; its color describes watch status, separately from attention.",
+      "html": "<span class=\"ds-watch-tag\">Early reports</span>",
+      "css": ".ds-watch-tag{display:inline-block;width:fit-content;color:#685647;background:color-mix(in srgb,#685647 6%,#fff);font:700 10px/1.5 Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;padding:2px 5px;border-radius:0;white-space:nowrap;}"
+    },
+    {
+      "name": "Regional Evidence Record",
+      "kind": "card",
+      "refersTo": "evidence-card",
+      "description": "Attributed evidence separated by a top rule, with original source links and collapsed local review.",
+      "html": "<article class=\"ds-evidence-card\"><h3>Attributed report headline</h3><div class=\"ds-evidence-meta\">Topic \u00b7 <time>Publication time</time></div><span class=\"ds-evidence-tag\">Multi-source</span><p>Original attribution stays with the report.</p><div class=\"ds-evidence-source\"><a href=\"#source\">Source: original headline</a><small>Published time \u00b7 location context</small></div><details class=\"ds-evidence-review\"><summary>Review &amp; notes \u00b7 unreviewed</summary><p>Review decisions are saved in this browser.</p></details></article>",
+      "css": ".ds-evidence-card{font:14px/1.5 Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;background:#fff;color:#171717;border:0;border-top:1px solid #cccccc;border-radius:0;padding:18px 0;}.ds-evidence-card.is-selected{border-top-color:#a81824;background:#f1f1f1;}.ds-evidence-card h3{font-size:20px;font-weight:700;line-height:1.35;letter-spacing:normal;margin:11px 0;max-width:75ch;}.ds-evidence-meta{display:flex;gap:7px;color:#595959;font-size:12px;margin:0 0 10px;}.ds-evidence-tag{display:inline-block;margin-top:10px;color:#8e481b;background:color-mix(in srgb,#8e481b 6%,#fff);font-size:10px;font-weight:700;padding:2px 5px;border-radius:0;}.ds-evidence-card p{color:#595959;margin:10px 0 16px;}.ds-evidence-source{display:grid;gap:4px;padding:12px 0;border-top:1px solid #cccccc;border-bottom:1px solid #cccccc;}.ds-evidence-source a{color:#171717;font-weight:700;text-decoration:underline;text-underline-offset:3px;}.ds-evidence-source a:hover{color:#a81824;}.ds-evidence-source small{color:#595959;}.ds-evidence-review summary{cursor:pointer;padding-top:12px;font-size:12px;color:#a81824;}.ds-evidence-source a:focus-visible{outline:2px solid #a81824;outline-offset:2px;}.ds-evidence-review summary:focus-visible{outline:2px solid #a81824;outline-offset:2px;}@media(max-width:600px){.ds-evidence-card{padding:14px;}}.ds-evidence-meta time{font-family:\"Courier New\", Courier, monospace;font-variant-numeric:tabular-nums;}"
+    },
+    {
+      "name": "Source Stream Row",
+      "kind": "custom",
+      "refersTo": "source-stream-row",
+      "description": "Courier timestamp beside an Inter headline and attribution in a bordered reading row.",
+      "html": "<a class=\"ds-stream-row\" href=\"#evidence\"><time>UTC time</time><span><strong>Current source headline</strong><small><em>Publisher reporting</em>Source attribution \u00b7 region mentioned</small></span></a>",
+      "css": ".ds-stream-row{display:grid;grid-template-columns:90px minmax(0,1fr);gap:10px;padding:14px 16px;border-bottom:1px solid #cccccc;color:#171717;text-decoration:none;font:14px/1.5 Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;transition:background-color .6s cubic-bezier(.16,1,.3,1),border-color .6s cubic-bezier(.16,1,.3,1),color .6s cubic-bezier(.16,1,.3,1),box-shadow .6s cubic-bezier(.16,1,.3,1);}.ds-stream-row:hover{background:#f1f1f1;text-decoration:none;}.ds-stream-row time{color:#595959;font:11px \"Courier New\", Courier, monospace;font-variant-numeric:tabular-nums;white-space:nowrap;}.ds-stream-row>span{display:grid;gap:5px;}.ds-stream-row strong{display:block;max-width:100ch;font-size:14px;line-height:1.4;font-weight:700;text-decoration:underline;text-underline-offset:3px;}.ds-stream-row small{display:block;margin-top:4px;color:#595959;font-size:11px;}.ds-stream-row em{display:inline-block;margin-right:7px;padding:1px 5px;color:#a81824;background:#fceced;font-style:normal;white-space:nowrap;}.ds-stream-row:focus-visible{outline:2px solid #a81824;outline-offset:2px;}@media(max-width:600px){.ds-stream-row{grid-template-columns:minmax(0,1fr);gap:5px;}}"
+    },
+    {
+      "name": "Locale Callout",
+      "kind": "custom",
+      "refersTo": "locale-callout",
+      "description": "Shared headline callout on the home flat map and globe, with separate watch-status and attention labels; Earth callouts resume after zooming back from satellites. This preview demonstrates high reporting volume.",
+      "html": "<a class=\"ds-locale-callout\" href=\"#regional-desk\"><strong>Regional desk</strong><span class=\"ds-callout-headline\">Attributed report headline</span><span class=\"ds-callout-tag\">Multi-source</span><small>High volume \u00b7 10 reports</small></a>",
+      "css": ".ds-locale-callout{display:grid;grid-template-columns:minmax(0,1fr);align-content:start;gap:5px;width:216px;height:128px;padding:10px 12px;background:#fff;border:1px solid #cccccc;color:#171717;text-decoration:none;font:14px/1.5 Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;transition:background-color .6s cubic-bezier(.16,1,.3,1),border-color .6s cubic-bezier(.16,1,.3,1),color .6s cubic-bezier(.16,1,.3,1),box-shadow .6s cubic-bezier(.16,1,.3,1);}.ds-locale-callout>strong{font-size:13px;font-weight:700;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.ds-callout-tag{display:inline-block;width:fit-content;color:#8e481b;background:color-mix(in srgb,#8e481b 6%,#fff);font-size:10px;font-weight:700;padding:2px 5px;border-radius:0;white-space:nowrap;}.ds-callout-headline{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:12px;font-weight:700;line-height:1.35;min-height:2.7em;color:#a81824;text-decoration:underline;text-underline-offset:2px;}.ds-locale-callout>small{font-family:\"Courier New\", Courier, monospace;font-variant-numeric:tabular-nums;color:#a81824;font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.ds-locale-callout:hover,.ds-locale-callout:focus-visible{border-color:#a81824;}.ds-locale-callout:focus-visible{outline:2px solid #a81824;outline-offset:2px;}@media(max-width:600px){.ds-locale-callout{width:180px;padding:9px 10px;}}"
+    },
+    {
+      "name": "Region Pill",
+      "kind": "nav",
+      "refersTo": "region-pill",
+      "description": "Compact route to a followed or currently selected regional desk.",
+      "html": "<a class=\"ds-region-pill\" href=\"#regional-desk\" aria-current=\"page\">Regional desk<span>Count</span></a>",
+      "css": ".ds-region-pill{display:inline-flex;align-items:center;gap:6px;min-height:30px;border:1px solid #cccccc;border-radius:999px;padding:5px 11px;color:#171717;background:#fff;font:11px/1.5 Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;white-space:nowrap;text-decoration:none;transition:background-color .6s cubic-bezier(.16,1,.3,1),border-color .6s cubic-bezier(.16,1,.3,1),color .6s cubic-bezier(.16,1,.3,1),box-shadow .6s cubic-bezier(.16,1,.3,1);}.ds-region-pill:hover,.ds-region-pill[aria-current=\"page\"]{border-color:#a81824;background:#fceced;text-decoration:none;}.ds-region-pill span{color:#595959;font:10px \"Courier New\", Courier, monospace;font-variant-numeric:tabular-nums;}.ds-region-pill:focus-visible{outline:2px solid #a81824;outline-offset:2px;}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Regional News Wire",
+    "overview": "KNUCKLETAT uses plain white daylight surfaces and charcoal night surfaces to make dense intelligence readable. Inter reading text, native Courier data, strong underlined report links, simple rules, and the existing illustrated logo establish the user's approved news-wire direction, inspired by Drudge Report. Compact controls support investigation without competing with the evidence.\n\nThe system is mostly flat: hairline dividers and subtle surface changes establish structure. Amber, burnt orange, and red show reporting attention; separate labeled status tags show the kind of watch. Source and time context remain close to each headline.",
+    "keyCharacteristics": [
+      "White day and charcoal night themes.",
+      "Inter for reading and controls; native Courier for data.",
+      "Square controls and evidence separated by rules.",
+      "Bold underlined report links.",
+      "Labeled attention and watch-status colors.",
+      "Existing KNUCKLETAT illustrated logo."
+    ],
+    "rules": [
+      {
+        "name": "The Attention Label Rule",
+        "body": "Ordinary reporting watches use low attention at 1\u20133 reports, active attention at 4\u20139, and high attention at 10+ in the displayed watch's 24h window. Measured alerts and established reporting surges take precedence and use red with their own explicit labels. Reporting volume does not establish severity or verification.",
+        "section": "colors"
+      },
+      {
+        "name": "The Status Continuity Rule",
+        "body": "Emerging, early reports, multi-source, verified observations, and long term retain their labeled status colors across filters and tags. Geographic watch markers use the separate attention scale; they do not redefine the status tags.",
+        "section": "colors"
+      },
+      {
+        "name": "The Data Type Rule",
+        "body": "Use Inter for reading text, headlines, controls, and watch-status labels. Reserve Courier with tabular numerals for data, including timestamps, counts, metrics, telemetry, and count-bearing activity rows. In source-health tables, provider descriptions and state labels use Inter; record counts, last-success timestamps, and refresh intervals use Courier.",
+        "section": "typography"
+      },
+      {
+        "name": "The Evidence First Rule",
+        "body": "Report links are bold and underlined, with source and time context immediately available. Globe callout headlines use a 2px underline offset; regional stream and original evidence links use 3px. High-volume, measured-alert, and surge callout headlines also adopt their attention color.",
+        "section": "typography"
+      }
+    ],
+    "dos": [
+      "Do preserve the existing KNUCKLETAT illustrated logo and its night-mode inversion.",
+      "Do use the paired neutral day/night roles, Inter reading text, and native Courier data for new intelligence surfaces.",
+      "Do pair attention colors with their volume, measured-alert, or reporting-surge labels.",
+      "Do repeat watch-status colors with readable labels in filters and evidence tags.",
+      "Do keep source attribution and original evidence links close to each headline.",
+      "Do distinguish hollow regional-context rings from filled provider-location points.",
+      "Do retain visible keyboard focus and respect reduced motion for map and evidence navigation."
+    ],
+    "donts": [
+      "Don't use reporting volume or repeated publisher reporting to imply severity or verification.",
+      "Don't present a country or waterway anchor as a precise incident site.",
+      "Don't replace the established illustrated logo with a new typographic mark.",
+      "Don't import the older gold/violet palette into the neutral news-wire desk."
+    ]
+  }
+}

@@ -21,6 +21,11 @@ describe('alertKind', () => {
     expect(alertKind('Early this morning, Israeli settlers vandalized the main water pipeline', '')).toBe('event');
   });
 
+  it('classifies a suspected public health incident as an event even without conflict terms', () => {
+    expect(alertKind('Irkutsk institute worker dies of pneumonia of unknown origin', '')).toBe('event');
+    expect(alertKind('Hospital closes wards', 'Contacts in Shelekhov were quarantined after a suspected infection.')).toBe('event');
+  });
+
   it('calls everything else news', () => {
     expect(alertKind('Denmark preserved Greenland. In a nutshell.', '')).toBe('news');
     expect(alertKind('Trump signs sweeping Russia sanctions bill into law.', '')).toBe('news');

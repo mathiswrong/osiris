@@ -7,13 +7,24 @@ import type { Flashpoint } from "@/lib/intelligence/flashpoints";
 import { missionFor } from "@/lib/intelligence/profiles";
 import type { Development, SatellitePosition } from "@/lib/intelligence/types";
 import type { TrafficContact } from "@/lib/intelligence/traffic";
+import type { RegionalHub } from "@/lib/intelligence/regional-hubs";
+import { WATCH_STATUSES, watchTags, watchAttention } from "@/lib/intelligence/flashpoints";
+import { applyMapProjection, explorationView, type ExplorationView } from "@/lib/map-projection";
+import { layoutTile, tilesOverlap, type TilePlacement } from "@/lib/map-tile-layout";
 interface Props {
+  globe?: boolean;
+  exploration?: ExplorationView;
+  onExplorationChange?: (view: ExplorationView) => void;
+  returnCenter?: { lat: number; lng: number };
+  locales?: RegionalHub[];
+  generatedAt?: string;
   theme?: "day" | "night";
   label?: string;
   onViewportChange?: (center: { lat: number; lng: number }) => void;
   contacts?: TrafficContact[];
   contextSatellites?: SatellitePosition[];
   focus?: { lat: number; lng: number };
+  bounds?: [number, number, number, number];
   radiusKm?: number;
   items: Development[];
   flashpoints: Flashpoint[];
@@ -37,14 +48,26 @@ export default function SituationMap({
   contacts = [],
   contextSatellites = [],
   focus,
+  bounds,
   radiusKm = 463,
   label,
   onViewportChange,
+  globe = false,
+  exploration,
+  onExplorationChange,
+  returnCenter,
+  locales,
+  generatedAt,
 }: Props) {
   const container = useRef<HTMLDivElement>(null),
     map = useRef<maplibregl.Map | null>(null),
     select = useRef(onSelect),
-    viewportChange = useRef(onViewportChange);
+    viewportChange = useRef(onViewportChange),
+    explorationChange = useRef(onExplorationChange),
+    view = useRef(exploration),
+    worldZoom = useRef(0),
+    globeZoom = useRef(0);
+  const journey = exploration !== undefined;
   const [ready, setReady] = useState(0),
     [error, setError] = useState("");
   const [hover, setHover] = useState<{
@@ -57,7 +80,8 @@ export default function SituationMap({
   useEffect(() => {
     select.current = onSelect;
     viewportChange.current = onViewportChange;
-  }, [onSelect, onViewportChange]);
+    explorationChange.current = onExplorationChange;
+  }, [onSelect, onViewportChange, onExplorationChange]);
   useEffect(() => {
     if (!container.current) return;
     maplibregl.setWorkerUrl(
@@ -71,6 +95,13 @@ export default function SituationMap({
           theme === "day" ? "/positron-style.json" : "/dark-matter-style.json",
         center: [0, 15],
         zoom: 0.5,
+        minZoom: journey ? -4 : -2,
+        // A single-world mercator normally clamps zoom to the viewport width.
+        // Let the home camera cross that edge so it can reveal the globe.
+        transformConstrain: journey ? (center, zoom) => ({
+          center: new maplibregl.LngLat(center.wrap().lng, Math.max(-85, Math.min(85, center.lat))),
+          zoom: Math.max(-4, Math.min(22, zoom)),
+        }) : undefined,
         renderWorldCopies: false,
         attributionControl: { compact: true },
       });
@@ -101,13 +132,31 @@ export default function SituationMap({
     m.on("load", () => {
       clearTimeout(timer);
       setError("");
-      m.fitBounds(
+      applyMapProjection(m, globe ? "globe" : "mercator");
+      if (globe) m.jumpTo({ center: [15, 20], zoom: Math.log2(Math.min(m.getContainer().clientWidth * .78, m.getContainer().clientHeight * .8) * Math.PI / 512) });
+      else m.fitBounds(
         [
           [-180, -62],
           [180, 80],
         ],
         { padding: 8, duration: 0 },
       );
+      if (journey) {
+        worldZoom.current = m.getZoom();
+        globeZoom.current = Math.log2(Math.min(m.getContainer().clientWidth * .78, m.getContainer().clientHeight * .8) * Math.PI / 512);
+        if (view.current !== "map") {
+          applyMapProjection(m, "globe");
+          m.jumpTo({ zoom: globeZoom.current });
+        }
+        m.on("zoomend", () => {
+          const next = explorationView(m.getZoom(), view.current || "map", worldZoom.current, globeZoom.current);
+          if (next === view.current) return;
+          view.current = next;
+          applyMapProjection(m, next === "map" ? "mercator" : "globe");
+          m.jumpTo({ zoom: next === "map" ? worldZoom.current : globeZoom.current, bearing: 0, pitch: 0 });
+          explorationChange.current?.(next);
+        });
+      }
       m.addSource("observations", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
@@ -157,7 +206,7 @@ export default function SituationMap({
             2.5,
             4.5,
           ],
-          "circle-color": [
+          "circle-color": ["coalesce", ["get", "color"], [
             "match",
             ["get", "kind"],
             "earthquake",
@@ -175,7 +224,7 @@ export default function SituationMap({
             "satellite",
             "#8d59c9",
             "#85c8a6",
-          ],
+          ]],
           "circle-stroke-width": [
             "case",
             ["==", ["get", "selected"], true],
@@ -187,13 +236,13 @@ export default function SituationMap({
           "circle-stroke-color": [
             "case",
             ["==", ["get", "kind"], "flashpoint"],
-            "#d16b2d",
+            ["coalesce", ["get", "color"], "#d16b2d"],
             "#e1ebe4",
           ],
           "circle-opacity": [
             "case",
             ["==", ["get", "kind"], "flashpoint"],
-            0.15,
+            0,
             0.85,
           ],
         },
@@ -237,7 +286,23 @@ export default function SituationMap({
       });
       setReady((v) => v + 1);
     });
-    const observer = new ResizeObserver(() => m.resize());
+    const observer = new ResizeObserver(() => {
+      if (!m.getContainer().clientWidth || !m.getContainer().clientHeight) return;
+      m.resize();
+      if (!m.isStyleLoaded()) return;
+      if (journey && m.getSource("observations")) {
+        const width = m.getContainer().clientWidth, height = m.getContainer().clientHeight;
+        const north = maplibregl.MercatorCoordinate.fromLngLat({ lng: -180, lat: 80 });
+        const south = maplibregl.MercatorCoordinate.fromLngLat({ lng: 180, lat: -62 });
+        const nextMapZoom = Math.log2(Math.min((width - 16) / 512, (height - 16) / (512 * (south.y - north.y))));
+        const nextGlobeZoom = Math.log2(Math.min(width * .78, height * .8) * Math.PI / 512);
+        const offset = m.getZoom() - (view.current === "map" ? worldZoom.current : globeZoom.current);
+        worldZoom.current = nextMapZoom;
+        globeZoom.current = nextGlobeZoom;
+        m.jumpTo({ zoom: (view.current === "map" ? nextMapZoom : nextGlobeZoom) + offset });
+      } else if (globe) m.jumpTo({ zoom: Math.log2(Math.min(m.getContainer().clientWidth * .78, m.getContainer().clientHeight * .8) * Math.PI / 512) });
+      else if (bounds) m.fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]], { padding: 30, duration: 0 });
+    });
     observer.observe(container.current);
     return () => {
       clearTimeout(timer);
@@ -245,7 +310,90 @@ export default function SituationMap({
       m.remove();
       map.current = null;
     };
-  }, [theme]);
+  }, [theme, globe, bounds, journey]);
+  useEffect(() => {
+    const m = map.current;
+    if (!ready || !m || !exploration || exploration === view.current) return;
+    view.current = exploration;
+    m.stop();
+    applyMapProjection(m, exploration === "map" ? "mercator" : "globe");
+    m.jumpTo({
+      center: returnCenter ? [returnCenter.lng, returnCenter.lat] : m.getCenter(),
+      zoom: exploration === "map" ? worldZoom.current : globeZoom.current,
+      bearing: 0, pitch: 0,
+    });
+  }, [exploration, returnCenter, ready]);
+  useEffect(() => {
+    const m = map.current;
+    if (!ready || !m || !locales) return;
+    const markers = locales.flatMap((hub) => {
+      if (!hub.center || !hub.watches.length) return [];
+      const watch = hub.watches[0];
+      const attention = watchAttention(watch, theme);
+      const element = document.createElement("a");
+      element.className = "locale-marker";
+      element.href = `/regions/${hub.id}`;
+      element.setAttribute("aria-label", `Open ${hub.name}: ${attention.label}, ${watch.count} ${watch.count === 1 ? "report" : "reports"}. ${watch.title}`);
+      element.dataset.activity = attention.level;
+      element.style.setProperty("--watch-color", attention.color);
+      element.style.setProperty("--marker-size", attention.level === "low" ? "12px" : attention.level === "active" ? "15px" : "18px");
+      const dot = document.createElement("span");
+      dot.className = "locale-dot";
+      const connector = document.createElement("span");
+      connector.className = "locale-connector";
+      const card = document.createElement("span");
+      card.className = "locale-callout";
+      const place = document.createElement("strong");
+      place.textContent = hub.name;
+      const badge = document.createElement("span");
+      badge.className = "watch-tags";
+      for (const id of watchTags(watch, Date.parse(generatedAt || ""))) {
+        const status = WATCH_STATUSES.find((candidate) => candidate.id === id)!;
+        const pill = document.createElement("span");
+        pill.className = "watch-tag";
+        pill.style.setProperty("--watch-color", status.color);
+        pill.textContent = status.label;
+        badge.append(pill);
+      }
+      const headline = document.createElement("span");
+      headline.className = "locale-headline";
+      headline.textContent = watch.title;
+      const context = document.createElement("small");
+      context.textContent = `${attention.label} · ${watch.count} ${watch.count === 1 ? "report" : "reports"}`;
+      context.title = `${watch.count} reports in this watch in 24h; ${hub.watches.length} watches and ${hub.sources.length} sources across ${hub.name}`;
+      card.append(place, headline, badge, context);
+      element.append(dot, connector, card);
+      element.addEventListener("click", (event) => {
+        if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        select.current(hub.id);
+      });
+      const marker = new maplibregl.Marker({ element, anchor: "center", opacityWhenCovered: 0 })
+        .setLngLat([hub.center.lng, hub.center.lat]).addTo(m);
+      return [{ marker, hub, element, card, connector }];
+    });
+    const place = () => {
+      const viewport = { width: m.getContainer().clientWidth, height: m.getContainer().clientHeight };
+      const geom = { width: viewport.width < 600 ? 180 : 216, imageHeight: 104, labelHeight: 24, gap: 26 };
+      const chosen: TilePlacement[] = [];
+      for (const { hub, element, card, connector } of markers) {
+        const point = m.project([hub.center!.lng, hub.center!.lat]);
+        const box = layoutTile(point, viewport, geom);
+        card.style.left = `${box.x - point.x + 6}px`;
+        card.style.top = `${box.y - point.y + 6}px`;
+        connector.style.top = box.flipped ? "12px" : "-26px";
+        connector.hidden = !box.anchored;
+        const visible = !element.classList.contains("maplibregl-marker-covered") && point.x >= 0 && point.y >= 0 && point.x <= viewport.width && point.y <= viewport.height;
+        const show = visible && chosen.length < (viewport.width < 600 ? 2 : 8) && !chosen.some((previous) => tilesOverlap(previous, box, geom));
+        element.dataset.callout = String(show);
+        element.style.zIndex = show ? "4" : "2";
+        if (show) chosen.push(box);
+      }
+    };
+    place();
+    m.on("render", place);
+    return () => { m.off("render", place); markers.forEach(({ marker }) => marker.remove()); };
+  }, [ready, locales, generatedAt, theme]);
   useEffect(() => {
     if (
       !ready ||
@@ -290,7 +438,7 @@ export default function SituationMap({
             : [],
         );
     if (!space)
-      for (const f of flashpoints) {
+      for (const f of [...flashpoints].reverse()) {
         if (f.location)
           features.push({
             type: "Feature",
@@ -301,10 +449,11 @@ export default function SituationMap({
             properties: {
               id: f.id,
               kind: "flashpoint",
+              color: watchAttention(f, theme).color,
               selected: f.id === selected || highlighted.includes(f.id),
               title: `${f.region} · ${f.topic}`,
               description: f.reasons[0],
-              context: `${f.state} · ${f.location.precision}`,
+              context: `${watchAttention(f, theme).label} · ${f.count} reports · ${f.state} · ${f.location.precision}`,
             },
           });
       }
@@ -359,6 +508,8 @@ export default function SituationMap({
     space,
     contacts,
     contextSatellites,
+    generatedAt,
+    theme,
   ]);
   useEffect(() => {
     if (!ready || !selected || !map.current) return;
@@ -403,12 +554,10 @@ export default function SituationMap({
       properties: {},
       geometry: { type: "Polygon", coordinates: [coordinates] },
     });
-    m.easeTo({
-      center: [focus.lng, focus.lat],
-      zoom: radiusKm <= 100 ? 7 : radiusKm <= 250 ? 5.8 : 4.8,
-      duration: 500,
-    });
-  }, [focus, radiusKm, ready]);
+    const duration = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 500;
+    if (bounds) m.fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]], { padding: 30, duration });
+    else m.easeTo({ center: [focus.lng, focus.lat], zoom: radiusKm <= 100 ? 7 : radiusKm <= 250 ? 5.8 : 4.8, duration });
+  }, [focus, bounds, radiusKm, ready]);
   return (
     <div
       className="desk-map-wrap"
@@ -444,8 +593,18 @@ export default function SituationMap({
       )}
       <button
         className="desk-map-reset"
-        onClick={() =>
-          map.current?.fitBounds(
+        onClick={() => journey && map.current
+          ? (() => {
+              view.current = "map";
+              applyMapProjection(map.current!, "mercator");
+              map.current!.jumpTo({ center: [0, 15], zoom: worldZoom.current, bearing: 0, pitch: 0 });
+              explorationChange.current?.("map");
+            })()
+          : bounds
+          ? map.current?.fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]], { padding: 30, duration: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 500 })
+          : globe
+          ? map.current?.easeTo({ center: [15, 20], zoom: Math.log2(Math.min(map.current.getContainer().clientWidth * .78, map.current.getContainer().clientHeight * .8) * Math.PI / 512), bearing: 0, pitch: 0, duration: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 500 })
+          : map.current?.fitBounds(
             [
               [-180, -62],
               [180, 80],
@@ -454,7 +613,7 @@ export default function SituationMap({
           )
         }
       >
-        Global view
+        {bounds ? "Region view" : journey ? "World map" : "Global view"}
       </button>
     </div>
   );

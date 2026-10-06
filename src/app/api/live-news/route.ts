@@ -36,6 +36,7 @@ const LIVE_FEEDS = [
 
   // ── State media (external only) ──
   { id: 'rt',       name: 'RT News',   city: 'Moscow',  country: 'RU', lat: 55.755, lng:  37.617, url: 'https://rumble.com/c/RTNewsEN', embed_allowed: false, category: 'state', language: 'en' },
+  { id: 'sabc', name: 'SABC News', city: 'Johannesburg', country: 'ZA', lat: -26.204, lng: 28.047, url: 'https://www.youtube.com/channel/UC8yH-uI81UUtEMDsowQyx1g/live', embed_allowed: false, category: 'mainstream', language: 'en' },
 ];
 
 export async function GET() {

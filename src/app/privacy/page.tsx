@@ -17,6 +17,7 @@ export const metadata: Metadata = {
  */
 
 const SERVICES: { service: string; sent: string; when: string }[] = [
+  { service: 'Google Analytics', sent: 'Browser and device information, a cookie identifier, sanitized page paths, and regional desk views, follows, saved-investigation actions and copied map links', when: 'On the production knuckletat.com hosts when Analytics is configured; query strings, URL fragments, analyst notes and copied URLs are excluded' },
   { service: 'ipapi.co, freeipapi.com, ip-api.com', sent: 'Your apparent IP address', when: 'Three seconds after the dashboard loads, to centre the map near you' },
   { service: 'api.xposedornot.com', sent: 'The email address you search', when: 'Breach lookups' },
   { service: 'cavalier.hudsonrock.com', sent: 'The email or domain you search', when: 'Infostealer lookups' },
@@ -118,7 +119,7 @@ export default function PrivacyPage() {
         </section>
 
         <p className="mt-10 text-[11px] text-[var(--text-muted)]">
-          Last reviewed against the codebase: 17 September 2026.
+          Last reviewed against the codebase: 5 October 2026.
         </p>
       </div>
     </main>

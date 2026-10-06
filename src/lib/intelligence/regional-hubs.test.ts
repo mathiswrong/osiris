@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { countryName } from "../countryCentroids";
 import { buildRegionalHubs, countryCatalog, emptyRegionalHub, regionId, regionalBrief, publicChannelWatches } from "./regional-hubs";
 import type { Flashpoint, FlashpointResult } from "./flashpoints";
 import { matchesWatchFilter, watchTags, watchAttention } from "./flashpoints";
@@ -18,6 +19,14 @@ function result(rows: Development[]): FlashpointResult {
 }
 
 describe("regional event candidates", () => {
+  it("keeps public regional URLs stable when browser country names differ", () => {
+    const browserNames = vi.spyOn(Intl.DisplayNames.prototype, "of").mockReturnValue("Browser country name");
+    try {
+      expect(["PS", "HK", "MO"].map((code) => regionId(countryName(code)))).toEqual([
+        "palestinian-territories", "hong-kong-sar-china", "macao-sar-china",
+      ]);
+    } finally { browserNames.mockRestore(); }
+  });
   it("maps report volume to an attention scale without inventing severity or verification", () => {
     const watch = result([report("a", "Reporting from Ukraine")]).data[0];
     expect([1, 3, 4, 9, 10, 100].map((count) => watchAttention({ ...watch, count }).level)).toEqual(["low", "low", "active", "active", "high", "high"]);

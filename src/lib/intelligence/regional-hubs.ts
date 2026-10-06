@@ -1,6 +1,6 @@
 import type { Flashpoint, FlashpointResult } from "./flashpoints";
 import type { Development } from "./types";
-import { COUNTRY_CENTROIDS, COUNTRY_BOUNDS } from "../countryCentroids";
+import { COUNTRY_CENTROIDS, COUNTRY_BOUNDS, countryName } from "../countryCentroids";
 import { reportGroups } from "./flashpoints";
 import { telegramPosts, type SignalFeed } from "./signal-analysis";
 
@@ -28,10 +28,9 @@ export function regionId(name: string): string {
   return name.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
     .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
-const display = new Intl.DisplayNames(["en"], { type: "region" });
 export const countryCatalog = Object.entries(COUNTRY_CENTROIDS)
   .filter(([code]) => code.length === 2)
-  .map(([code, [lng, lat]]) => ({ code, id: regionId(display.of(code) || code), name: display.of(code) || code, center: { lat, lng }, bounds: COUNTRY_BOUNDS[code] }));
+  .map(([code, [lng, lat]]) => ({ code, id: regionId(countryName(code)), name: countryName(code), center: { lat, lng }, bounds: COUNTRY_BOUNDS[code] }));
 export const regionCatalog = [
   ...countryCatalog,
   { id: "strait-of-hormuz", name: "Strait of Hormuz", center: { lat: 26.6, lng: 56.5 } },

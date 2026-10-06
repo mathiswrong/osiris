@@ -35,6 +35,15 @@ export const COUNTRY_CENTROIDS: Record<string, [number, number]> = {
   HK:[114.2,22.3],MO:[113.5,22.2],BN:[114.7,4.5],MV:[73.5,3.2],
 };
 
+const regionDisplay = new Intl.DisplayNames(["en"], { type: "region" });
+// Keep existing locale URLs stable across the server and browser's ICU versions.
+const stableRegionNames: Record<string, string> = {
+  PS: "Palestinian Territories", HK: "Hong Kong SAR China", MO: "Macao SAR China",
+};
+export function countryName(code: string): string {
+  return stableRegionNames[code] || regionDisplay.of(code) || code;
+}
+
 /** Returns [lng, lat] for a country code, or null when unknown. */
 export function centroidFor(code: string | null | undefined): [number, number] | null {
   if (!code) return null;

@@ -1,4 +1,4 @@
-import { COUNTRY_CENTROIDS } from "../countryCentroids";
+import { COUNTRY_CENTROIDS, countryName } from "../countryCentroids";
 import type { Development, SourceResult } from "./types";
 import { healthSignal } from "../health-signals";
 const HOUR = 3_600_000;
@@ -73,7 +73,6 @@ export function watchTags(watch: Flashpoint, now: number): WatchStatus[] {
 export function matchesWatchFilter(watch: Flashpoint, filter: WatchFilter, now: number) {
   return filter === "all" || watchTags(watch, now).includes(filter);
 }
-const display = new Intl.DisplayNames(["en"], { type: "region" });
 const aliases: Record<string, string[]> = {
   UA: ["Ukraine", "Ukrainian", "Kyiv", "Kiev", "Kharkiv", "Odesa"],
   IR: ["Iran", "Iranian", "Tehran"],
@@ -129,10 +128,10 @@ const regions = Object.entries({ ...COUNTRY_CENTROIDS, ...extra })
   .filter(([code]) => code.length === 2)
   .map(([code, [lng, lat]]) => ({
     code,
-    name: display.of(code) || code,
+    name: countryName(code),
     lng,
     lat,
-    terms: aliases[code] || [display.of(code) || code],
+    terms: aliases[code] || [countryName(code)],
   }));
 function escaped(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

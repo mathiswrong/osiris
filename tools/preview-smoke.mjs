@@ -128,7 +128,51 @@ try {
   // Wait for asynchronous module workers, style loading and initial data layers.
   await new Promise(resolve => setTimeout(resolve, 25_000));
   if (process.env.PROFILE_TERRAIN) { await command('Profiler.enable'); await command('Profiler.start'); }
-  if (scenario === 'recovery') {
+  if (scenario === 'workspace') {
+    const activeTab = name => `[...document.querySelectorAll('nav[aria-label="Workspace"] a')].some(a => a.getAttribute('aria-current') === 'page' && a.textContent.trim().startsWith(${JSON.stringify(name)}))`;
+    const selectTab = async name => {
+      await evaluate(`[...document.querySelectorAll('nav[aria-label="Workspace"] a')].find(a => a.textContent.trim().startsWith(${JSON.stringify(name)})).click()`);
+      for (let i = 0; i < 80 && !await evaluate(activeTab(name)); i++) await pause(250);
+      await check(`${name} tab opens`, activeTab(name));
+    };
+    for (const name of ['Sources', 'Satellites', 'Map']) {
+      await selectTab(name);
+      await command('Page.reload');
+      await pause(2000);
+      await check(`${name} survives browser reload`, activeTab(name));
+    }
+    await selectTab('Sources');
+    await evaluate('history.back()'); await pause(1500);
+    await check('Back returns to Map', activeTab('Map'));
+    await evaluate('history.forward()'); await pause(1500);
+    await check('Forward returns to Sources', activeTab('Sources'));
+    await selectTab('Map'); await pause(3000);
+    const camera = () => evaluate(`(() => {
+      const element = document.querySelector('.desk-map');
+      let fiber = element[Object.keys(element).find(key => key.startsWith('__reactFiber'))];
+      for (; fiber; fiber = fiber.return) for (let hook = fiber.memoizedState; hook; hook = hook.next) {
+        const map = hook.memoizedState?.current;
+        if (map?.getProjection) return { projection: map.getProjection()?.type || 'mercator', zoom: map.getZoom(), width: map.getContainer().clientWidth, height: map.getContainer().clientHeight, wraps: map.getRenderWorldCopies(), worldWidth: 512 * 2 ** map.getZoom() };
+      }
+      throw new Error('Situation map not mounted');
+    })()`);
+    measurements.worldCamera = await camera();
+    const fillsPanel = camera => camera.projection === 'mercator' && camera.wraps && camera.worldWidth >= camera.height - 1;
+    checks.push({ name: 'Flat map fills the rectangular panel', passed: fillsPanel(measurements.worldCamera) });
+    await click('Zoom in'); await pause(350);
+    measurements.closeCamera = await camera();
+    for (let i = 0; i < 6; i++) { await click('Zoom out'); await pause(350); }
+    measurements.zoomedOutCamera = await camera();
+    checks.push({ name: 'Zoom out stays flat and keeps the panel filled', passed: fillsPanel(measurements.zoomedOutCamera) && measurements.zoomedOutCamera.zoom < measurements.closeCamera.zoom });
+    await check('Zoom out keeps the map and avoids orbital view', `document.querySelectorAll('.maplibregl-canvas').length === 1 && !document.querySelector('.flashpoint-orbits')`);
+    await click('World map'); await pause(500);
+    measurements.resetCamera = await camera();
+    checks.push({ name: 'World map reset restores overview', passed: Math.abs(measurements.resetCamera.zoom - measurements.worldCamera.zoom) < .01 });
+    await command('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: false }); await pause(500);
+    measurements.narrowCamera = await camera();
+    checks.push({ name: 'Narrow panel stays filled on resize', passed: fillsPanel(measurements.narrowCamera) });
+    await command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false }); await pause(500);
+  } else if (scenario === 'recovery') {
     await check('Failed style shows recovery state', `document.querySelector('[data-map-status]')?.dataset.mapStatus === 'error' && document.body.innerText.includes('Retry map')`);
     await command('Network.setBlockedURLs', { urls: [] });
     measurements.retryVisibility = await evaluate(`({hidden: document.hidden, state: document.visibilityState})`);
@@ -275,8 +319,10 @@ try {
   await writeFile(join(profile, 'report.json'), JSON.stringify(report, null, 2));
   console.log(JSON.stringify({ scenario, checks, measurements, errors, warnings, failedRequests: requests, report: join(profile, 'report.json'), screenshot: report.screenshot }, null, 2));
   process.exitCode = errors.length || checks.some(c => !c.passed) ? 1 : 0;
+} catch (error) {
+  console.error(JSON.stringify({ checks, errors, warnings, page: await evaluate('document.body.innerText.slice(0, 5000)').catch(() => '') }, null, 2));
+  throw error;
 } finally {
   clearTimeout(deadline);
-  await command('Browser.close', {}, undefined).catch(() => {});
   chrome.kill();
 }

@@ -28,7 +28,6 @@ colors:
   watch-early: "#685647"
   watch-multiple: "#8e481b"
   watch-verified: "#08786c"
-  watch-long-term: "#555555"
   activity-low: "#795421"
   activity-active: "#a34318"
   activity-high: "#a81824"
@@ -174,7 +173,6 @@ The palette uses neutral surfaces and a warm attention spectrum. The frontmatter
 - **Early Brown:** early reports and single-source leads.
 - **Multi-Source Burnt Orange:** multi-source watch tags and filters; distinct from the active-volume color.
 - **Observation Teal:** measured/verified provider observations; night green supports operational accents.
-- **Long-Term Grey:** long-running watch tags and filters.
 - **Warning Amber:** retrieval issues and unverified source labels, with a brighter night counterpart.
 
 ### Neutral
@@ -189,7 +187,7 @@ The palette uses neutral surfaces and a warm attention spectrum. The frontmatter
 
 **The Attention Label Rule.** Ordinary reporting watches use low attention at 1–3 reports, active attention at 4–9, and high attention at 10+ in the displayed watch's 24h window. Measured alerts and established reporting surges take precedence and use red with their own explicit labels. Reporting volume does not establish severity or verification.
 
-**The Status Continuity Rule.** Emerging, early reports, multi-source, verified observations, and long term retain their labeled status colors across filters and tags. Geographic watch markers use the separate attention scale; they do not redefine the status tags.
+**The Status Continuity Rule.** Emerging, early reports, multi-source, and verified observations retain their labeled status colors across filters and tags. Geographic watch markers use the separate attention scale; they do not redefine the status tags.
 
 ## Typography
 

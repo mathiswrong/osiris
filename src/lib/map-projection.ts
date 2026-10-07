@@ -30,13 +30,3 @@ export function applyMapProjection(
   map.setProjection(next);
   return true;
 }
-
-export type ExplorationView = 'map' | 'globe' | 'satellites';
-
-// Each projection has its own world-fit scale; zooming out must not shrink the
-// Earth to a speck just because mercator and the globe measure zoom differently.
-export function explorationView(zoom: number, current: ExplorationView, mapZoom: number, globeZoom: number): ExplorationView {
-  if (current === 'map') return zoom < mapZoom - 0.35 ? 'globe' : 'map';
-  if (current === 'globe') return zoom > globeZoom + 0.35 ? 'map' : zoom < globeZoom - 0.75 ? 'satellites' : 'globe';
-  return current;
-}

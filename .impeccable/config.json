@@ -1,1 +1,15 @@
-{"buildPath":"code"}
+{
+  "buildPath": "code",
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font",
+        "value": "jetbrains mono",
+        "createdAt": "2026-10-07T01:10:55.442Z",
+        "reason": "Agent triage: legacy desk declaration is superseded by the active news-wire type system at desk.css:2478-2488, using Inter and native Courier as DESIGN.md specifies."
+      }
+    ]
+  }
+}

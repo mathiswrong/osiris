@@ -81,8 +81,7 @@ export default function RegionalWorkspace({ selectedId }: { selectedId?: string 
     trackKeyEvent("view_region", { region_id: selected.id });
     viewedRegion.current = selected.id;
   }, [snapshot, selected]);
-  const snapshotTime = Date.parse(snapshot?.flashpoints.generatedAt || "");
-  const visibleWatches = selected?.watches.filter((watch) => matchesWatchFilter(watch, watchFilter, snapshotTime) && `${watch.topic} ${watch.title} ${watch.reports.map((report) => report.source + " " + report.title).join(" ")}`.toLowerCase().includes(query.trim().toLowerCase())) || [];
+  const visibleWatches = selected?.watches.filter((watch) => matchesWatchFilter(watch, watchFilter) && `${watch.topic} ${watch.title} ${watch.reports.map((report) => report.source + " " + report.title).join(" ")}`.toLowerCase().includes(query.trim().toLowerCase())) || [];
   const visibleReports = new Set(visibleWatches.flatMap((watch) => watch.reports.map((report) => report.id)));
   const visibleEvents = selected?.events.filter((event) => event.reports.some((report) => visibleReports.has(report.id))) || [];
   const center = selected?.center;
@@ -131,12 +130,12 @@ export default function RegionalWorkspace({ selectedId }: { selectedId?: string 
         <div className="regional-desk-summary"><span><strong>{selected.events.length}</strong> headline groups</span><span><strong>{selected.watches.length}</strong> watches</span><span><strong>{selected.sources.length}</strong> sources</span><FollowRegionButton region={{ id: selected.id, name: selected.name }} /></div>
       </div>
       <nav className="regional-section-links" aria-label="Regional desk sections"><a href="#regional-context">Situation</a><a href="#regional-topics">Topics</a><a href="#regional-latest">Latest sources</a><a href="#regional-evidence">Evidence</a><a href="#regional-saved">Saved investigations</a></nav>
-      <div className="regional-desk-tools"><WatchFilters value={watchFilter} onChange={setWatchFilter} watches={selected.watches} now={snapshotTime} /><label className="regional-desk-search">Search this desk<input aria-label="Search regional reports and sources" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Topic, headline, or source…" /></label></div>
-      <section id="regional-topics" className="regional-topic-index"><h2>Topic watches <span>{visibleWatches.length}</span></h2><div>{visibleWatches.map((watch) => <button key={watch.id} onClick={() => setQuery(query === watch.topic ? "" : watch.topic)} aria-pressed={query === watch.topic}><strong>{watch.topic}</strong><WatchTags watch={watch} now={snapshotTime} /><WatchActivity watch={watch} theme={theme} /><small>{watch.publishers} sources</small></button>)}</div><p>Watches group a place and topic; they may contain separate events. Select a topic to focus this desk.</p></section>
+      <div className="regional-desk-tools"><WatchFilters value={watchFilter} onChange={setWatchFilter} watches={selected.watches} /><label className="regional-desk-search">Search this desk<input aria-label="Search regional reports and sources" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Topic, headline, or source…" /></label></div>
+      <section id="regional-topics" className="regional-topic-index"><h2>Topic watches <span>{visibleWatches.length}</span></h2><div>{visibleWatches.map((watch) => <button key={watch.id} onClick={() => setQuery(query === watch.topic ? "" : watch.topic)} aria-pressed={query === watch.topic}><strong>{watch.topic}</strong><WatchTags watch={watch} /><WatchActivity watch={watch} theme={theme} /><small>{watch.publishers} sources</small></button>)}</div><p>Watches group a place and topic; they may contain separate events. Select a topic to focus this desk.</p></section>
       <div className="regional-desk-grid">
       <section id="regional-context" className="regional-map-section" aria-label="Situation map">
         <div className="regional-section-head"><h2>{mapScope === "global" ? "World context" : `${selected.name} · regional context`}</h2><div className="regional-map-switch"><button aria-pressed={mapScope === "region"} onClick={() => setMapScope("region")}>Region</button><button aria-pressed={mapScope === "global"} onClick={() => setMapScope("global")}>World</button></div></div>
-        <RegionalMap key={mapScope} globe={mapScope === "global"} generatedAt={snapshot.flashpoints.generatedAt} items={[...visibleEvents.flatMap((event) => event.reports).filter((report) => !!report.location), ...nearby]} flashpoints={mapScope === "global" ? snapshot.flashpoints.data : visibleWatches} satellites={[]} track={[]} selected={selectedRecord} highlighted={visibleWatches.map((watch) => watch.id)} theme={theme} onSelect={(id) => {
+        <RegionalMap key={mapScope} generatedAt={snapshot.flashpoints.generatedAt} items={[...visibleEvents.flatMap((event) => event.reports).filter((report) => !!report.location), ...nearby]} flashpoints={mapScope === "global" ? snapshot.flashpoints.data : visibleWatches} satellites={[]} track={[]} selected={selectedRecord} highlighted={visibleWatches.map((watch) => watch.id)} theme={theme} onSelect={(id) => {
           const event = selected.events.find((candidate) => candidate.id === id || candidate.reports.some((report) => report.id === id));
           const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth";
           setSelectedRecord(id);
@@ -153,7 +152,7 @@ export default function RegionalWorkspace({ selectedId }: { selectedId?: string 
         <p className="regional-map-explainer">Filled points are provider locations; rings are country or waterway context, not precise incident sites.</p>
       </section>
       <RegionalBroadcasts key={selected.id} regionId={selected.id} name={selected.name} />
-      <RegionalDeskStream key={selected.id} hub={{ ...selected, events: visibleEvents, watches: visibleWatches }} nearby={watchFilter === "all" || watchFilter === "verified" ? nearby : []} feed={feed} feedError={feedError} now={snapshotTime} query={query} includePublicLeads={watchFilter === "all" || watchFilter === "early"} />
+      <RegionalDeskStream key={selected.id} hub={{ ...selected, events: visibleEvents, watches: visibleWatches }} nearby={watchFilter === "all" || watchFilter === "verified" ? nearby : []} feed={feed} feedError={feedError} query={query} includePublicLeads={watchFilter === "all" || watchFilter === "early"} />
       </div>
       <div className="regional-support-grid">
         <RegionalSatellites key={selected.id} name={selected.name} center={selected.center} />
@@ -168,7 +167,7 @@ export default function RegionalWorkspace({ selectedId }: { selectedId?: string 
         <section id="regional-evidence">
           <h2>Report evidence <span>{visibleEvents.length}</span></h2>
           <p className="regional-explainer">These reports mention {selected.name}; the event may be elsewhere. Headlines are grouped only when wording and publication times closely match. Each card keeps its original evidence. You can separate a report if the suggested grouping is wrong.</p>
-          <div className="regional-events">{visibleEvents.map((event) => <EventCard key={event.id} event={event} watch={visibleWatches.find((watch) => watch.reports.some((report) => event.reports.some((row) => row.id === report.id)))} now={snapshotTime} selected={event.id === selectedRecord || event.reports.some((report) => report.id === selectedRecord)} review={reviews[event.id]} onReview={(patch) => updateReview(event.id, patch)} onSeparate={separate} />)}{!visibleEvents.length && <div className="regional-no-results">No reports match this status and search.{(watchFilter !== "all" || query) && <button onClick={() => { setWatchFilter("all"); setQuery(""); }}>Clear filters</button>}</div>}</div>
+          <div className="regional-events">{visibleEvents.map((event) => <EventCard key={event.id} event={event} watch={visibleWatches.find((watch) => watch.reports.some((report) => event.reports.some((row) => row.id === report.id)))} selected={event.id === selectedRecord || event.reports.some((report) => report.id === selectedRecord)} review={reviews[event.id]} onReview={(patch) => updateReview(event.id, patch)} onSeparate={separate} />)}{!visibleEvents.length && <div className="regional-no-results">No reports match this status and search.{(watchFilter !== "all" || query) && <button onClick={() => { setWatchFilter("all"); setQuery(""); }}>Clear filters</button>}</div>}</div>
           <section className="regional-observations"><h2>Nearby provider observations <span>{nearby.length}</span></h2><p>Within 900 km of the regional context center. These observations are spatial context and are not attributed to the reports above.</p>{nearby.map((record) => <a id={`observation-${encodeURIComponent(record.id)}`} key={record.id} href={record.url} target="_blank" rel="noreferrer"><strong>{record.title} ↗</strong><small>{record.source} · {stamp(record.occurredAt)} · {record.location?.precision}</small></a>)}{!nearby.length && <p>No nearby located observations in the current feed window.</p>}</section>
         </section>
         <aside>
@@ -187,11 +186,11 @@ export default function RegionalWorkspace({ selectedId }: { selectedId?: string 
   </main>;
 }
 
-function EventCard({ event, watch, now, selected, review, onReview, onSeparate }: { event: RegionalEvent; watch?: Flashpoint; now: number; selected: boolean; review?: Review; onReview: (patch: Partial<Review>) => void; onSeparate: (id: string) => void }) {
+function EventCard({ event, watch, selected, review, onReview, onSeparate }: { event: RegionalEvent; watch?: Flashpoint; selected: boolean; review?: Review; onReview: (patch: Partial<Review>) => void; onSeparate: (id: string) => void }) {
   return <article className={`regional-event${selected ? " is-selected" : ""}`} id={`event-${encodeURIComponent(event.id)}`}>
     <h3>{event.title}</h3>
     <div className="regional-event-top"><span>{event.topic} · {event.grouping}</span><time dateTime={event.latestAt}>{stamp(event.latestAt)}</time></div>
-    {watch && <WatchTags watch={watch} now={now} />}
+    {watch && <WatchTags watch={watch} />}
     <p>{event.reports.length} attributed {event.reports.length === 1 ? "record" : "records"} · {event.sourceCount} {event.sourceCount === 1 ? "source" : "sources"}. Similar reporting does not establish independent confirmation.</p>
     <div className="regional-evidence">{event.reports.map((report) => <div key={report.id}><a href={report.url} target="_blank" rel="noreferrer">{report.source}: {report.title} ↗</a><small>Published {stamp(report.occurredAt)} · {report.location ? `${report.location.precision} (${report.location.lat.toFixed(2)}, ${report.location.lng.toFixed(2)})` : "precise location not established"}</small>{event.reports.length > 1 && <button onClick={() => onSeparate(report.id)}>Separate this report</button>}</div>)}</div>
     <details className="regional-review-details"><summary>Review & notes · {review?.status || "unreviewed"}{review?.saved ? " · saved" : ""}{review?.note ? " · note added" : ""}</summary>

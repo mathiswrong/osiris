@@ -45,7 +45,6 @@ export const WATCH_STATUSES = [
   { id: "early", label: "Early reports", color: "#685647" },
   { id: "multiple", label: "Multi-source", color: "#8e481b" },
   { id: "verified", label: "Verified observations", color: "#08786c" },
-  { id: "long-term", label: "Long term", color: "#555555" },
 ] as const;
 /** Reporting volume is attention, not an inferred incident severity. */
 export function watchAttention(watch: Flashpoint, theme: "day" | "night" = "day") {
@@ -63,15 +62,14 @@ export function watchAttention(watch: Flashpoint, theme: "day" | "night" = "day"
 }
 export type WatchStatus = (typeof WATCH_STATUSES)[number]["id"];
 export type WatchFilter = "all" | WatchStatus;
-export function watchTags(watch: Flashpoint, now: number): WatchStatus[] {
+export function watchTags(watch: Flashpoint): WatchStatus[] {
   const primary: WatchStatus = watch.state === "measured alert" ? "verified"
     : watch.state === "emerging" ? "emerging"
     : watch.state === "multi-source watch" ? "multiple" : "early";
-  return primary !== "verified" && now - Date.parse(watch.firstSeen) >= 24 * HOUR
-    ? [primary, "long-term"] : [primary];
+  return [primary];
 }
-export function matchesWatchFilter(watch: Flashpoint, filter: WatchFilter, now: number) {
-  return filter === "all" || watchTags(watch, now).includes(filter);
+export function matchesWatchFilter(watch: Flashpoint, filter: WatchFilter) {
+  return filter === "all" || watchTags(watch).includes(filter);
 }
 const aliases: Record<string, string[]> = {
   UA: ["Ukraine", "Ukrainian", "Kyiv", "Kiev", "Kharkiv", "Odesa"],

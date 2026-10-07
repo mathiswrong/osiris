@@ -33,7 +33,7 @@ describe("regional event candidates", () => {
     expect(watchAttention({ ...watch, count: 1, state: "emerging" }).label).toBe("Reporting surge");
     expect(watchAttention({ ...watch, count: 1, state: "measured alert" }).label).toBe("Measured alert");
     const high = { ...watch, count: 100, state: "single-source lead" as const };
-    expect(watchTags(high, Date.parse(at))).toEqual(["early"]);
+    expect(watchTags(high)).toEqual(["early"]);
     expect(watchAttention(high).color).not.toBe(watchAttention(high, "night").color);
   });
   it("frames large countries across the antimeridian without expanding to the whole world", () => {
@@ -71,15 +71,16 @@ describe("regional event candidates", () => {
   it("filters actual watch states without treating publisher agreement as verification", () => {
     const watch = result([report("a", "Reporting from Ukraine")]).data[0];
     const now = Date.parse(at);
-    expect(matchesWatchFilter(watch, "multiple", now)).toBe(true);
-    expect(matchesWatchFilter(watch, "verified", now)).toBe(false);
-    expect(watchTags({ ...watch, state: "single-source lead" }, now)).toEqual(["early"]);
-    expect(watchTags({ ...watch, state: "emerging" }, now)).toEqual(["emerging"]);
+    expect(matchesWatchFilter(watch, "multiple")).toBe(true);
+    expect(matchesWatchFilter(watch, "verified")).toBe(false);
+    expect(watchTags({ ...watch, state: "single-source lead" })).toEqual(["early"]);
+    expect(watchTags({ ...watch, state: "emerging" })).toEqual(["emerging"]);
     const ongoing = { ...watch, firstSeen: new Date(now - 24 * 3_600_000).toISOString() };
-    expect(matchesWatchFilter(ongoing, "long-term", now)).toBe(true);
-    expect(matchesWatchFilter(ongoing, "long-term", now - 1)).toBe(false);
+    expect(watchTags(ongoing)).toEqual(["multiple"]);
+    expect(matchesWatchFilter(ongoing, "multiple")).toBe(true);
+    expect(matchesWatchFilter(ongoing, "all")).toBe(true);
     const measured = { ...watch, id: "flash:usgs:quake", region: "Measured earthquake", state: "measured alert" as const, location: { lat: 12, lng: 34, precision: "provider observation" as const } };
-    expect(matchesWatchFilter(measured, "verified", now)).toBe(true);
+    expect(matchesWatchFilter(measured, "verified")).toBe(true);
     const hub = buildRegionalHubs({ ...result(watch.reports), data: [measured] })[0];
     expect(hub.id).toBe("observed-flash-usgs-quake");
     expect(hub.center).toEqual(measured.location);
@@ -91,7 +92,7 @@ describe("regional event candidates", () => {
     ] }] });
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({ region: "Ukraine", publishers: 2, count: 2, state: "single-source lead", location: { precision: "country context" } });
-    expect(matchesWatchFilter(rows[0], "verified", Date.parse(at))).toBe(false);
+    expect(matchesWatchFilter(rows[0], "verified")).toBe(false);
     expect(publicChannelWatches(null)).toEqual([]);
   });
 });

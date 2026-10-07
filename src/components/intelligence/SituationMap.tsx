@@ -9,13 +9,8 @@ import type { Development, SatellitePosition } from "@/lib/intelligence/types";
 import type { TrafficContact } from "@/lib/intelligence/traffic";
 import type { RegionalHub } from "@/lib/intelligence/regional-hubs";
 import { WATCH_STATUSES, watchTags, watchAttention } from "@/lib/intelligence/flashpoints";
-import { applyMapProjection, explorationView, type ExplorationView } from "@/lib/map-projection";
 import { layoutTile, tilesOverlap, type TilePlacement } from "@/lib/map-tile-layout";
 interface Props {
-  globe?: boolean;
-  exploration?: ExplorationView;
-  onExplorationChange?: (view: ExplorationView) => void;
-  returnCenter?: { lat: number; lng: number };
   locales?: RegionalHub[];
   generatedAt?: string;
   theme?: "day" | "night";
@@ -52,22 +47,13 @@ export default function SituationMap({
   radiusKm = 463,
   label,
   onViewportChange,
-  globe = false,
-  exploration,
-  onExplorationChange,
-  returnCenter,
   locales,
   generatedAt,
 }: Props) {
   const container = useRef<HTMLDivElement>(null),
     map = useRef<maplibregl.Map | null>(null),
     select = useRef(onSelect),
-    viewportChange = useRef(onViewportChange),
-    explorationChange = useRef(onExplorationChange),
-    view = useRef(exploration),
-    worldZoom = useRef(0),
-    globeZoom = useRef(0);
-  const journey = exploration !== undefined;
+    viewportChange = useRef(onViewportChange);
   const [ready, setReady] = useState(0),
     [error, setError] = useState("");
   const [hover, setHover] = useState<{
@@ -80,8 +66,7 @@ export default function SituationMap({
   useEffect(() => {
     select.current = onSelect;
     viewportChange.current = onViewportChange;
-    explorationChange.current = onExplorationChange;
-  }, [onSelect, onViewportChange, onExplorationChange]);
+  }, [onSelect, onViewportChange]);
   useEffect(() => {
     if (!container.current) return;
     maplibregl.setWorkerUrl(
@@ -93,16 +78,9 @@ export default function SituationMap({
         container: container.current,
         style:
           theme === "day" ? "/positron-style.json" : "/dark-matter-style.json",
-        center: [0, 15],
+        center: [0, 0],
         zoom: 0.5,
-        minZoom: journey ? -4 : -2,
-        // A single-world mercator normally clamps zoom to the viewport width.
-        // Let the home camera cross that edge so it can reveal the globe.
-        transformConstrain: journey ? (center, zoom) => ({
-          center: new maplibregl.LngLat(center.wrap().lng, Math.max(-85, Math.min(85, center.lat))),
-          zoom: Math.max(-4, Math.min(22, zoom)),
-        }) : undefined,
-        renderWorldCopies: false,
+        minZoom: -4,
         attributionControl: { compact: true },
       });
     } catch {
@@ -132,31 +110,7 @@ export default function SituationMap({
     m.on("load", () => {
       clearTimeout(timer);
       setError("");
-      applyMapProjection(m, globe ? "globe" : "mercator");
-      if (globe) m.jumpTo({ center: [15, 20], zoom: Math.log2(Math.min(m.getContainer().clientWidth * .78, m.getContainer().clientHeight * .8) * Math.PI / 512) });
-      else m.fitBounds(
-        [
-          [-180, -62],
-          [180, 80],
-        ],
-        { padding: 8, duration: 0 },
-      );
-      if (journey) {
-        worldZoom.current = m.getZoom();
-        globeZoom.current = Math.log2(Math.min(m.getContainer().clientWidth * .78, m.getContainer().clientHeight * .8) * Math.PI / 512);
-        if (view.current !== "map") {
-          applyMapProjection(m, "globe");
-          m.jumpTo({ zoom: globeZoom.current });
-        }
-        m.on("zoomend", () => {
-          const next = explorationView(m.getZoom(), view.current || "map", worldZoom.current, globeZoom.current);
-          if (next === view.current) return;
-          view.current = next;
-          applyMapProjection(m, next === "map" ? "mercator" : "globe");
-          m.jumpTo({ zoom: next === "map" ? worldZoom.current : globeZoom.current, bearing: 0, pitch: 0 });
-          explorationChange.current?.(next);
-        });
-      }
+      m.fitBounds([[-180, -85], [180, 85]], { padding: 8, duration: 0 });
       m.addSource("observations", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
@@ -290,18 +244,7 @@ export default function SituationMap({
       if (!m.getContainer().clientWidth || !m.getContainer().clientHeight) return;
       m.resize();
       if (!m.isStyleLoaded()) return;
-      if (journey && m.getSource("observations")) {
-        const width = m.getContainer().clientWidth, height = m.getContainer().clientHeight;
-        const north = maplibregl.MercatorCoordinate.fromLngLat({ lng: -180, lat: 80 });
-        const south = maplibregl.MercatorCoordinate.fromLngLat({ lng: 180, lat: -62 });
-        const nextMapZoom = Math.log2(Math.min((width - 16) / 512, (height - 16) / (512 * (south.y - north.y))));
-        const nextGlobeZoom = Math.log2(Math.min(width * .78, height * .8) * Math.PI / 512);
-        const offset = m.getZoom() - (view.current === "map" ? worldZoom.current : globeZoom.current);
-        worldZoom.current = nextMapZoom;
-        globeZoom.current = nextGlobeZoom;
-        m.jumpTo({ zoom: (view.current === "map" ? nextMapZoom : nextGlobeZoom) + offset });
-      } else if (globe) m.jumpTo({ zoom: Math.log2(Math.min(m.getContainer().clientWidth * .78, m.getContainer().clientHeight * .8) * Math.PI / 512) });
-      else if (bounds) m.fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]], { padding: 30, duration: 0 });
+      if (bounds) m.fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]], { padding: 30, duration: 0 });
     });
     observer.observe(container.current);
     return () => {
@@ -310,19 +253,7 @@ export default function SituationMap({
       m.remove();
       map.current = null;
     };
-  }, [theme, globe, bounds, journey]);
-  useEffect(() => {
-    const m = map.current;
-    if (!ready || !m || !exploration || exploration === view.current) return;
-    view.current = exploration;
-    m.stop();
-    applyMapProjection(m, exploration === "map" ? "mercator" : "globe");
-    m.jumpTo({
-      center: returnCenter ? [returnCenter.lng, returnCenter.lat] : m.getCenter(),
-      zoom: exploration === "map" ? worldZoom.current : globeZoom.current,
-      bearing: 0, pitch: 0,
-    });
-  }, [exploration, returnCenter, ready]);
+  }, [theme, bounds]);
   useEffect(() => {
     const m = map.current;
     if (!ready || !m || !locales) return;
@@ -347,7 +278,7 @@ export default function SituationMap({
       place.textContent = hub.name;
       const badge = document.createElement("span");
       badge.className = "watch-tags";
-      for (const id of watchTags(watch, Date.parse(generatedAt || ""))) {
+      for (const id of watchTags(watch)) {
         const status = WATCH_STATUSES.find((candidate) => candidate.id === id)!;
         const pill = document.createElement("span");
         pill.className = "watch-tag";
@@ -593,27 +524,18 @@ export default function SituationMap({
       )}
       <button
         className="desk-map-reset"
-        onClick={() => journey && map.current
-          ? (() => {
-              view.current = "map";
-              applyMapProjection(map.current!, "mercator");
-              map.current!.jumpTo({ center: [0, 15], zoom: worldZoom.current, bearing: 0, pitch: 0 });
-              explorationChange.current?.("map");
-            })()
-          : bounds
+        onClick={() => bounds
           ? map.current?.fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]], { padding: 30, duration: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 500 })
-          : globe
-          ? map.current?.easeTo({ center: [15, 20], zoom: Math.log2(Math.min(map.current.getContainer().clientWidth * .78, map.current.getContainer().clientHeight * .8) * Math.PI / 512), bearing: 0, pitch: 0, duration: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 500 })
           : map.current?.fitBounds(
             [
-              [-180, -62],
-              [180, 80],
+              [-180, -85],
+              [180, 85],
             ],
-            { padding: 8, duration: 500 },
+            { padding: 8, bearing: 0, pitch: 0, duration: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 500 },
           )
         }
       >
-        {bounds ? "Region view" : journey ? "World map" : "Global view"}
+        {bounds ? "Region view" : locales ? "World map" : "Global view"}
       </button>
     </div>
   );

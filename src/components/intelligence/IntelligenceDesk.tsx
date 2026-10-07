@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Activity,
   ArrowUpRight,
@@ -85,9 +86,9 @@ function failure(id: string, message: string): SourceHealth {
     error: message,
   };
 }
-export default function IntelligenceDesk() {
-  const [mode, setMode] = useState<Mode>("global"),
-    [results, setResults] = useState<Record<string, SourceResult>>({}),
+export default function IntelligenceDesk({ mode = "global" }: { mode?: Mode }) {
+  const router = useRouter();
+  const [results, setResults] = useState<Record<string, SourceResult>>({}),
     [satellites, setSatellites] = useState<SatelliteResult | null>(null);
   const [selected, setSelected] = useState<string | null>(null),
     [satelliteId, setSatelliteId] = useState<string | null>(null),
@@ -104,15 +105,9 @@ export default function IntelligenceDesk() {
     [refresh, setRefresh] = useState(0),
     [busy, setBusy] = useState(false);
   const [theme, setTheme] = useState<"day" | "night">("day");
-  useEffect(() => {
-    const view = new URLSearchParams(window.location.search).get("view");
-    if (view === "sources" || view === "space") {
-      setMode(view);
-      if (view === "space") setSatelliteActive(true);
-    }
-  }, []);
   const [investigation, setInvestigation] = useState<string | null>(null);
-  const [satelliteActive, setSatelliteActive] = useState(false);
+  const [satelliteRequested, setSatelliteActive] = useState(false);
+  const satelliteActive = satelliteRequested || mode === "space";
   const activateSatellite = useCallback(() => setSatelliteActive(true), []);
   const { feed: signalFeed, feedError: signalError } = useSignalsFeed(refresh);
   const signalTiles = useSignalTiles({ feed: signalFeed, feedError: signalError });
@@ -309,11 +304,9 @@ export default function IntelligenceDesk() {
   const investigate = (id: string) => {
     setSelected(id);
     setInvestigation(id);
-    setMode("global");
+    router.push("/");
   };
-  const switchMode = (next: Mode) => {
-    setMode(next);
-    if (next === "space") setSatelliteActive(true);
+  const resetFilters = () => {
     setRecordLimit(25);
     setQuery("");
   };
@@ -350,28 +343,28 @@ export default function IntelligenceDesk() {
         </Link>
       </header>
       <nav className="desk-navigation" aria-label="Workspace">
-        <button
-          aria-pressed={mode === "global"}
-          onClick={() => switchMode("global")}
+        <Link href="/" className="desk-main-link"
+          aria-current={mode === "global" ? "page" : undefined}
+          onClick={resetFilters}
         >
           <MapPin size={14} />
           Map
-        </button>
+        </Link>
         <MyDeskLink hubs={regionalHubs} />
-        <button aria-pressed={mode === "space"} onClick={() => switchMode("space")}>
+        <Link href="/?view=space" className="desk-main-link" aria-current={mode === "space" ? "page" : undefined} onClick={resetFilters}>
           <Satellite size={14} />
           Satellites
-        </button>
-        <button
-          aria-pressed={mode === "sources"}
-          onClick={() => switchMode("sources")}
+        </Link>
+        <Link href="/?view=sources" className="desk-main-link"
+          aria-current={mode === "sources" ? "page" : undefined}
+          onClick={resetFilters}
         >
           <Activity size={14} />
           Sources{" "}
           {issues.length > 0 && (
             <span className="desk-count">{issues.length}</span>
           )}
-        </button>
+        </Link>
         <span className="desk-nav-note">
           DIRECT PROVIDERS · ATTRIBUTED RECORDS
         </span>
@@ -484,7 +477,7 @@ export default function IntelligenceDesk() {
           </div>
         </section>
       ) : mode === "global" ? (
-        <FlashpointGlobe result={flashpoints} error={monitorError} theme={theme} feed={signalFeed} satellites={satellites} onActivateSatellites={activateSatellite} onSelectSatellite={(id) => { setSatelliteId(id); switchMode("space"); }} />
+        <FlashpointGlobe result={flashpoints} error={monitorError} theme={theme} feed={signalFeed} />
       ) : (
         <DashboardGrid>
             <DashboardTile id="flashpoints" title="Flashpoint Monitor" w={6} h={16}>

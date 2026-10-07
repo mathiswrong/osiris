@@ -10,15 +10,15 @@ import type {
 import { WATCH_STATUSES, matchesWatchFilter, watchTags, watchAttention, type WatchFilter } from "@/lib/intelligence/flashpoints";
 import type { CSSProperties } from "react";
 
-export function WatchFilters({ value, onChange, watches, now }: { value: WatchFilter; onChange: (value: WatchFilter) => void; watches: Flashpoint[]; now: number }) {
+export function WatchFilters({ value, onChange, watches }: { value: WatchFilter; onChange: (value: WatchFilter) => void; watches: Flashpoint[] }) {
   return <div className="watch-filters" role="group" aria-label="Filter watch status">
     {[{ id: "all" as const, label: "All watches", color: "var(--desk-accent)" }, ...WATCH_STATUSES].map((status) => <button key={status.id} style={{ "--watch-color": status.color } as CSSProperties} aria-pressed={value === status.id} onClick={() => onChange(status.id)}>
-      {status.id !== "all" && <i aria-hidden="true" />}{status.label}<span>{watches.filter((watch) => matchesWatchFilter(watch, status.id, now)).length}</span>
+      {status.id !== "all" && <i aria-hidden="true" />}{status.label}<span>{watches.filter((watch) => matchesWatchFilter(watch, status.id)).length}</span>
     </button>)}
   </div>;
 }
-export function WatchTags({ watch, now }: { watch: Flashpoint; now: number }) {
-  return <span className="watch-tags">{watchTags(watch, now).map((id) => {
+export function WatchTags({ watch }: { watch: Flashpoint }) {
+  return <span className="watch-tags">{watchTags(watch).map((id) => {
     const status = WATCH_STATUSES.find((candidate) => candidate.id === id)!;
     return <span key={id} className="watch-tag" style={{ "--watch-color": status.color } as CSSProperties}>{status.label}</span>;
   })}</span>;
@@ -51,7 +51,7 @@ export function FlashpointMonitor({
   }, []);
   const previewLimit = compact ? 5 : 10;
   const rows = (result?.data || []).filter(
-    (f) => matchesWatchFilter(f, filter, Date.parse(result?.generatedAt || "")),
+    (f) => matchesWatchFilter(f, filter),
   );
   const seen = new Set<string>();
   const top = rows
@@ -79,7 +79,7 @@ export function FlashpointMonitor({
           Where to look next{" "}
           <span>· Hover for context · Select to investigate across feeds</span>
         </p>
-        <WatchFilters value={filter} onChange={setFilter} watches={result?.data || []} now={Date.parse(result?.generatedAt || "")} />
+        <WatchFilters value={filter} onChange={setFilter} watches={result?.data || []} />
       </div>
       <div className={`desk-flash-grid ${expanded ? "is-expanded" : ""}`}>
         {(expanded ? rows : top).map((f, index) => (
